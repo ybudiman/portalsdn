@@ -50,6 +50,7 @@ class PresensiController extends Controller
                 'foto_out',
                 'status',
                 'lintashari',
+                'approve_at',
                 'total_jam'
             )
             ->where('presensi.tanggal', $tanggal);
