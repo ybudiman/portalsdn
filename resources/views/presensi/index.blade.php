@@ -230,7 +230,7 @@
                                                         <!-- Form tersembunyi untuk approve -->
                                                         <form id="approve-form-{{ $d->id }}" action="{{ route('presensi.approve', $d->id) }}" method="POST" style="display: none;">
                                                             @csrf
-                                                            @method('POST')
+                                                            <!-- @method('PUT') -->
                                                         </form>
 
                                                         <!-- Tombol Approve -->

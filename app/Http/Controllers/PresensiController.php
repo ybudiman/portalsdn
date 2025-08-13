@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 class PresensiController extends Controller
 {
@@ -754,5 +755,26 @@ class PresensiController extends Controller
                 return Redirect::back()->with(messageError($e->getMessage()));
             }
         }
+    }
+
+    public function approve(Presensi $presensi, Request $request)
+    {
+        // optional: cek izin di Gate/Policy di sini
+
+        if (!empty($presensi->approve_at)) {
+            return $request->expectsJson()
+                ? response()->json(['message' => 'Presensi sudah di-approve.'], 422)
+                : back()->with('warning', 'Presensi sudah di-approve.');
+        }
+
+        $approveNik = Userkaryawan::where('id_user', auth()->id())->value('nik');
+
+        $presensi->approve_at = now();
+        $presensi->approve_by = $approveNik;
+        $presensi->save();
+
+        return $request->expectsJson()
+            ? response()->json(['message' => 'Berhasil di-approve'])
+            : back()->with('success', 'Presensi berhasil di-approve.');
     }
 }
