@@ -298,7 +298,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/presensi/{id}/delete', 'destroy')->name('presensi.delete')->can('presensi.delete');
         Route::get('/presensi/{id}/{status}/show', 'show')->name('presensi.show');
         Route::post('/presensi/edit', 'edit')->name('presensi.edit')->can('presensi.edit');
-        Route::post('/presensi/approve', 'approve')->name('presensi.approve')->can('presensi.approve');
+        // Route::post('/presensi/approve', 'approve')->name('presensi.approve')->can('presensi.approve');
+        Route::post('/presensi/{presensi}/approve', [PresensiController::class, 'approve'])->name('presensi.approve')->can('presensi.approve');
 
         Route::post('/presensi/getdatamesin', 'getdatamesin')->name('presensi.getdatamesin');
         Route::post('/presensi/{pin}/{status_scan}/updatefrommachine', 'updatefrommachine')->name('presensi.updatefrommachine');

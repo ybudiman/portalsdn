@@ -345,14 +345,35 @@
         });
     });
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const btn = e.target.closest('.approvePresensi');
         if (!btn) return;
+
         e.preventDefault();
 
-        const id = btn.getAttribute('data-id');
+        const id   = btn.getAttribute('data-id');
+        const form = document.getElementById(`approve-form-${id}`);
 
-        Swal.fire({
+        if (!form) {
+            if (window.Swal) Swal.fire('Gagal', 'Form approve tidak ditemukan.', 'error');
+            else alert('Form approve tidak ditemukan.');
+            return;
+        }
+
+        // cegah dobel klik
+        if (btn.dataset.busy === '1') return;
+
+        const doSubmit = () => {
+            // tampilkan loading jika ada Swal
+            if (window.Swal) {
+            Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            }
+            btn.dataset.busy = '1';
+            form.submit(); // biarkan server redirect + flash message
+        };
+
+        if (window.Swal) {
+            Swal.fire({
             title: 'Konfirmasi Approve',
             text: 'Apakah Anda yakin ingin menyetujui presensi ini?',
             icon: 'question',
@@ -360,18 +381,10 @@
             confirmButtonText: 'Ya, Approve',
             cancelButtonText: 'Batal',
             reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // (opsional) tampilkan loading singkat
-                Swal.fire({
-                    title: 'Memproses...',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
-
-                document.getElementById(`approve-form-${id}`).submit();
-            }
+            }).then((result) => { if (result.isConfirmed) doSubmit(); });
+        } else {
+            if (confirm('Approve presensi ini?')) doSubmit();
+        }
         });
-    });
 </script>
 @endpush
