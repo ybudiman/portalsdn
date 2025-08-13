@@ -50,7 +50,6 @@ class PresensiController extends Controller
                 'foto_out',
                 'status',
                 'lintashari',
-                'approve_at',
                 'total_jam'
             )
             ->where('presensi.tanggal', $tanggal);
@@ -78,6 +77,7 @@ class PresensiController extends Controller
             'foto_out',
             'lintashari',
             'karyawan.pin',
+            'presensi.approve_at',
             'total_jam'
         );
         $query->leftjoinSub($presensi, 'presensi', function ($join) {
