@@ -2,13 +2,13 @@
 
  <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
      <div class="app-brand demo">
-         <a href="index.html" class="app-brand-link">
+         <!-- <a href="index.html" class="app-brand-link"> -->
              <span class="app-brand-logo demo">
-                 <i class="ti ti-fingerprint" style="font-size:32px !important"></i>
+                 <i class="ti ti-brand-amd" style="font-size:32px !important"></i>
                  {{-- <img src="{{ asset('assets/img/logo/hibah.png') }}" alt="" width="64"> --}}
              </span>
-             <span class="app-brand-text demo menu-text fw-bold"><i><b>e</b></i>PresensiV2</span>
-         </a>
+             <span class="app-brand-text demo menu-text fw-bold">Portal</span>
+         <!-- </a> -->
 
          <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
              <i class="ti menu-toggle-icon d-none d-xl-block ti-sm align-middle"></i>
@@ -26,9 +26,9 @@
                  <div>Dashboard</div>
              </a>
          </li>
-         @if (auth()->user()->hasAnyPermission(['karyawan.index', 'departemen.index', 'cabang.index', 'cuti.index', 'jamkerja.index', 'jabatan.index']))
+         @if (auth()->user()->hasAnyPermission(['karyawan.index', 'departemen.index', 'cabang.index', 'cuti.index', 'jamkerja.index', 'jabatan.index', 'kendaraan.index']))
              <li
-                 class="menu-item {{ request()->is(['karyawan', 'karyawan/*', 'departemen', 'cabang', 'cuti', 'jamkerja', 'jabatan']) ? 'open' : '' }}">
+                 class="menu-item {{ request()->is(['karyawan', 'karyawan/*', 'departemen', 'cabang', 'cuti', 'jamkerja', 'jabatan', 'kendaraan']) ? 'open' : '' }}">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">
                      <i class="menu-icon tf-icons ti ti-database"></i>
                      <div>Data Master</div>
@@ -77,8 +77,13 @@
                              </a>
                          </li>
                      @endcan
-
-
+                     @can('kendaraan.index')
+                         <li class="menu-item {{ request()->is(['kendaraan', 'kendaraan/*']) ? 'active' : '' }}">
+                             <a href="{{ route('kendaraan.index') }}" class="menu-link">
+                                 <div>Kendaraan</div>
+                             </a>
+                         </li>
+                     @endcan
                  </ul>
              </li>
          @endif

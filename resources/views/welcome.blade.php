@@ -131,6 +131,7 @@
         [type=submit],
         button {
             -webkit-appearance: button;
+            appearance: button;
             background-color: transparent;
             background-image: none
         }
@@ -154,6 +155,7 @@
 
         [type=search] {
             -webkit-appearance: textfield;
+            appearance: textfield;
             outline-offset: -2px
         }
 
@@ -230,7 +232,7 @@
         object,
         svg,
         video {
-            display: block;
+            display: inline-block;
             vertical-align: middle
         }
 

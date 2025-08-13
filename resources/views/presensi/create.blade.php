@@ -593,13 +593,49 @@
         }
     </script>
     <script>
+        function parseAjaxError(xhr) {
+        let res = {};
+        // coba ambil JSON
+        if (xhr && xhr.responseJSON) {
+            res = xhr.responseJSON;
+        } else if (xhr && typeof xhr.responseText === 'string') {
+            const text = xhr.responseText.trim();
+            // kalau HTML (login/error page)
+            const looksHtml = text.startsWith('<!DOCTYPE') || text.startsWith('<html');
+            if (!looksHtml) {
+            try { res = JSON.parse(text); } catch(e) {}
+            } else {
+            // deteksi umum
+            if (text.toLowerCase().includes('login')) {
+                res.message = 'Sesi habis. Silakan login ulang.';
+            } else if (text.toLowerCase().includes('page expired')) {
+                res.message = 'Sesi kedaluwarsa (419). Muat ulang halaman.';
+            } else {
+                res.message = 'Server mengembalikan halaman HTML (mungkin redirect ke login).';
+            }
+            }
+        }
+        // fallback by status
+        if (!res.message) {
+            if (xhr?.status === 419) res.message = 'Sesi kedaluwarsa (419). Muat ulang halaman.';
+            else if (xhr?.status === 401) res.message = 'Unauthorized (401). Silakan login ulang.';
+            else if (xhr?.status === 413) res.message = 'Payload terlalu besar (413).';
+            else if (xhr?.status >= 500) res.message = 'Terjadi kesalahan server ('+xhr.status+').';
+            else res.message = 'Terjadi kesalahan.';
+        }
+        // log bantu debug
+        console.log('[AJAX ERR]', {status:xhr?.status, res, raw: xhr?.responseText?.slice(0,200)});
+        return res;
+        }
+    </script>
+    <script>
         // Fungsi yang dijalankan ketika dokumen siap
         $(function() {
             // Variabel untuk menampung lokasi
             let lokasi;
             // Variabel untuk menampung lokasi user
             let lokasi_user;
-            let multi_lokasi = {{ $general_setting->multi_lokasi }};
+            let multi_lokasi = "{{ $general_setting->multi_lokasi }}";
             let lokasi_cabang = multi_lokasi ? document.getElementById('cabang').value :
                 "{{ $lokasi_kantor->lokasi_cabang }}";
             // Variabel map global
@@ -1432,6 +1468,10 @@
                     $.ajax({
                         type: 'POST',
                         url: "{{ route('presensi.store') }}",
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
                         data: {
                             _token: "{{ csrf_token() }}",
                             image: image,
@@ -1455,30 +1495,51 @@
                             }
                         },
                         error: function(xhr) {
-                            if (xhr.responseJSON.notifikasi == "notifikasi_radius") {
-                                notifikasi_radius.play();
-                            } else if (xhr.responseJSON.notifikasi == "notifikasi_mulaiabsen") {
-                                notifikasi_mulaiabsen.play();
-                            } else if (xhr.responseJSON.notifikasi == "notifikasi_akhirabsen") {
-                                notifikasi_akhirabsen.play();
-                            } else if (xhr.responseJSON.notifikasi == "notifikasi_sudahabsen") {
-                                notifikasi_sudahabsen.play();
+                            const res = parseAjaxError(xhr);
+                            if (res.notifikasi === "notifikasi_radius") notifikasi_radius?.play();
+                            else if (res.notifikasi === "notifikasi_mulaiabsen") notifikasi_mulaiabsen?.play();
+                            else if (res.notifikasi === "notifikasi_akhirabsen") notifikasi_akhirabsen?.play();
+                            else if (res.notifikasi === "notifikasi_sudahabsen") {
+                                notifikasi_sudahabsen?.play();
                             }
+                            // if (xhr.responseJSON.notifikasi == "notifikasi_radius") {
+                            //     notifikasi_radius.play();
+                            // } else if (xhr.responseJSON.notifikasi == "notifikasi_mulaiabsen") {
+                            //     notifikasi_mulaiabsen.play();
+                            // } else if (xhr.responseJSON.notifikasi == "notifikasi_akhirabsen") {
+                            //     notifikasi_akhirabsen.play();
+                            // } else if (xhr.responseJSON.notifikasi == "notifikasi_sudahabsen") {
+                            //     notifikasi_sudahabsen.play();
+                            // }
+                            // swal.fire({
+                            //     icon: 'error',
+                            //     title: 'Oops...',
+                            //     text: res.message,
+                            //     // text: xhr.responseJSON.message,
+                            //     didClose: function() {
+                            //         $("#absenmasuk").prop('disabled', false);
+                            //         $("#absenpulang").prop('disabled', false);
+                            //         $("#absenmasuk").html(
+                            //             '<ion-icon name="finger-print-outline" style="font-size: 24px !important"></ion-icon><span style="font-size:14px">Masuk</span>'
+                            //         );
+                            //         $("#absenpulang").html(
+                            //             '<ion-icon name="finger-print-outline" style="font-size: 24px !important"></ion-icon><span style="font-size:14px">Pulang</span>'
+                            //         )
+                            //     }
+
+                            // });
                             swal.fire({
                                 icon: 'error',
                                 title: 'Oops...',
-                                text: xhr.responseJSON.message,
-                                didClose: function() {
-                                    $("#absenmasuk").prop('disabled', false);
-                                    $("#absenpulang").prop('disabled', false);
-                                    $("#absenmasuk").html(
-                                        '<ion-icon name="finger-print-outline" style="font-size: 24px !important"></ion-icon><span style="font-size:14px">Masuk</span>'
-                                    );
-                                    $("#absenpulang").html(
-                                        '<ion-icon name="finger-print-outline" style="font-size: 24px !important"></ion-icon><span style="font-size:14px">Pulang</span>'
-                                    )
-                                }
-
+                                text: res.message
+                            }).then(() => {
+                                // reset tombol
+                                $("#absenmasuk").prop('disabled', false).html(
+                                '<ion-icon name="finger-print-outline" style="font-size: 24px !important"></ion-icon><span style="font-size:14px">Masuk</span>'
+                                );
+                                $("#absenpulang").prop('disabled', false).html(
+                                '<ion-icon name="finger-print-outline" style="font-size: 24px !important"></ion-icon><span style="font-size:14px">Pulang</span>'
+                                );
                             });
                         }
                     });

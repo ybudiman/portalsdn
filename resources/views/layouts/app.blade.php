@@ -20,6 +20,9 @@
 
     @include('layouts.styles')
 
+    @include('partials.livechat-styles')
+    @stack('styles')
+
     <!-- Helpers -->
     <script src="{{ asset('/assets/vendor/js/helpers.js') }}"></script>
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
@@ -70,9 +73,12 @@
     </div>
     <!-- / Layout wrapper -->
 
+    @include('partials.livechat')
+
     <!-- Core JS -->
     @include('layouts.scripts')
     <!-- Page JS -->
+    @stack('myscript')
 </body>
 
 </html>

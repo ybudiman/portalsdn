@@ -5,6 +5,11 @@
 
     RewriteEngine On
 
+    # ===== allow SW & manifest =====
+    RewriteRule ^(service-worker\.js|manifest\.json)$ - [L]
+    # (opsional) kalau ada workbox/sw lain:
+    # RewriteRule ^(sw\.js|sw-.*\.js|workbox-.*\.js)$ - [L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

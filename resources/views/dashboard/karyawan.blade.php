@@ -146,9 +146,7 @@
                 @if (!empty($karyawan->foto))
                     @if (Storage::disk('public')->exists('/karyawan/' . $karyawan->foto))
                         <div
-                            style="width: 80px; height: 80px; background-image: url({{ getfotoKaryawan($karyawan->foto) }}); background-size: cover; background-position: center; border-radius: 50%;">
-
-
+                            style="width: 80px; height: 80px; background-image: url('{{ getfotoKaryawan($karyawan->foto) }}'); background-size: cover; background-position: center; border-radius: 50%;">
                         </div>
                     @else
                         <div class="avatar avatar-xs me-2">

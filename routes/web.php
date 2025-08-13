@@ -20,6 +20,7 @@ use App\Http\Controllers\JamkerjabydeptController;
 use App\Http\Controllers\JamkerjaController;
 use App\Http\Controllers\JenistunjanganController;
 use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\KendaraanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LemburController;
 use App\Http\Controllers\PengajuanizinController;
@@ -424,6 +425,15 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:super admin')->controller(WagatewayController::class)->group(function () {
         Route::get('/wagateway', 'index')->name('wagateway.index');
+    });
+
+    Route::controller(KendaraanController::class)->group(function () {
+        Route::get('/kendaraan', 'index')->name('kendaraan.index')->can('kendaraan.index');
+        Route::get('/dat/kendaraan/create', 'create')->name('kendaraan.create')->can('kendaraan.create');
+        // Route::post('/dat/kendaraan', 'store')->name('kendaraan.store')->can('kendaraan.create');
+        // Route::get('/dat/kendaraan/{kode_kendaraan}', 'edit')->name('kendaraan.edit')->can('kendaraan.edit');
+        // Route::put('/dat/kendaraan/{kode_kendaraan}', 'update')->name('kendaraan.update')->can('kendaraan.edit');
+        // Route::delete('/dat/kendaraan/{kode_kendaraan}/delete', 'destroy')->name('kendaraan.delete')->can('kendaraan.delete');
     });
 });
 
