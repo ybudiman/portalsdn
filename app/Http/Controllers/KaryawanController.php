@@ -256,7 +256,7 @@ class KaryawanController extends Controller
     public function show($nik)
     {
         $nik = Crypt::decrypt($nik);
-        $karyawan = Karyawan::where('nik', $nik)
+        $karyawan = Karyawan::where('karyawan.nik', $nik)
             ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
@@ -272,7 +272,7 @@ class KaryawanController extends Controller
             )
 
             ->first();
-        $user_karyawan = Userkaryawan::where('karyawan.nik', $nik)->first();
+        $user_karyawan = Userkaryawan::where('nik', $nik)->first();
         $user = $user_karyawan ? User::where('id', $user_karyawan->id_user)->first() : null;
         $karyawan_wajah = Facerecognition::where('nik', $nik)->get();
         $data['karyawan'] = $karyawan;
