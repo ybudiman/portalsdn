@@ -65,6 +65,9 @@ class KaryawanController extends Controller
         $data['cabang'] = Cabang::orderBy('kode_cabang')->get();
         $data['departemen'] = Departemen::orderBy('kode_dept')->get();
         $data['jabatan'] = Jabatan::orderBy('kode_jabatan')->get();
+
+        // Ambil semua karyawan sebagai opsi atasan
+        $data['daftar_atasan'] = Karyawan::orderBy('nama_karyawan')->get(['nik', 'nama_karyawan']);
         return view('datamaster.karyawan.create', $data);
     }
 
@@ -86,7 +89,8 @@ class KaryawanController extends Controller
             'kode_dept' => 'required',
             'kode_jabatan' => 'required',
             'tanggal_masuk' => 'required',
-            'status_karyawan' => 'required'
+            'status_karyawan' => 'required',
+            'nik_atasan' => 'nullable|exists:karyawan,nik|different:nik',
         ]);
 
         try {
@@ -117,7 +121,8 @@ class KaryawanController extends Controller
                 'status_karyawan' => $request->status_karyawan,
                 'lock_location' => 1,
                 'status_aktif_karyawan' => 1,
-                'password' => Hash::make('12345')
+                'password' => Hash::make('12345'),
+                'nik_atasan' => $request->nik_atasan ?: null,
             ];
             $data = array_merge($data_karyawan, $data_foto);
             $simpan = Karyawan::create($data);
