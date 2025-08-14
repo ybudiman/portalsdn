@@ -272,7 +272,7 @@ class KaryawanController extends Controller
             )
 
             ->first();
-        $user_karyawan = Userkaryawan::where('nik', $nik)->first();
+        $user_karyawan = Userkaryawan::where('karyawan.nik', $nik)->first();
         $user = $user_karyawan ? User::where('id', $user_karyawan->id_user)->first() : null;
         $karyawan_wajah = Facerecognition::where('nik', $nik)->get();
         $data['karyawan'] = $karyawan;
