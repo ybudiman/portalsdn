@@ -44,7 +44,7 @@
                     <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
                         @csrf
                         <div class="logo">
-                            <img src="{{ asset('assets/logo.png') }}" alt="easyclass" />
+                            <img src="{{ asset('assets/login/images/logo.png') }}" alt="easyclass" />
                             <h4>PORTAL</h4>
                         </div>
 
