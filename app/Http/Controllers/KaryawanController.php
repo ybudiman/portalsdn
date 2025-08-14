@@ -261,6 +261,15 @@ class KaryawanController extends Controller
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
             ->join('status_kawin', 'karyawan.kode_status_kawin', '=', 'status_kawin.kode_status_kawin')
+            ->leftJoin('karyawan as atasan', 'karyawan.nik_atasan', '=', 'atasan.nik')
+            ->select(
+                'karyawan.*',
+                'cabang.nama_cabang',
+                'departemen.nama_dept',
+                'jabatan.nama_jabatan',
+                'status_kawin.status_kawin',
+                'atasan.nama_karyawan as nama_atasan'
+            )
 
             ->first();
         $user_karyawan = Userkaryawan::where('nik', $nik)->first();
