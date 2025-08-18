@@ -55,6 +55,12 @@ Route::middleware('guest')->group(function () {
     })->name('loginuser');
 });
 
+
+// Route::get('/', fn () => redirect()->route('login'))
+//     ->middleware('guest')
+//     ->name('loginuser');
+
+
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');

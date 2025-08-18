@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign in & Sign up Form</title>
+    <title>SDN | Login</title>
     <link rel="stylesheet" href="{{ asset('assets/login/css/style.css') }}" />
     <style>
         .alert {
@@ -45,8 +45,12 @@
                         @csrf
                         <div class="logo">
                             <img src="{{ asset('assets/login/images/logo.png') }}" alt="easyclass" />
-                            <h4>PORTAL</h4>
+                            <h1>SDN PORTAL</h1>
                         </div>
+
+                        <!-- <div class="heading">
+                            <h1>SDN PORTAL</h1>
+                        </div> -->
 
                         <div class="heading">
                             <h2>Welcome Back</h2>
@@ -83,17 +87,17 @@
                                 @enderror --}}
                             </div>
 
-                            <div class="checkbox-wrap">
+                            <!-- <div class="checkbox-wrap">
                                 <input type="checkbox" id="remember" name="remember" style="margin-right: 8px; width: 16px; height: 16px;">
                                 <label for="remember" style="color: #666; font-size: 14px; cursor: pointer; margin-left: 20px;">Remember Me</label>
-                            </div>
+                            </div> -->
 
                             <input type="submit" value="Sign In" class="sign-btn" />
 
-                            <p class="text">
+                            <!-- <p class="text">
                                 Forgotten your password or you login datails?
                                 <a href="#">Get help</a> signing in
-                            </p>
+                            </p> -->
                         </div>
                     </form>
 
