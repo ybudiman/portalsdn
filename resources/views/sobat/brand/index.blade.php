@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('titlepage', 'Kendaraan')
+@section('titlepage', 'Brand')
 
 @section('content')
 @section('navigasi')
-    <span>Kendaraan</span>
+    <span>Brand</span>
 @endsection
 
 <div class="row">
@@ -12,17 +12,16 @@
             <div class="card-header">
                 @can('kendaraan.create')
                     <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i> Tambah
-                        Kendaraan</a>
-                    <!-- <a href="#" class="btn btn-success" id="btnImport"><i class="ti ti-file-import me-2"></i> Import Excel</a> -->
+                        Brand</a>
                 @endcan
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-12">
-                        <form action="{{ route('kendaraan.index') }}">
+                        <form action="{{ route('brand.index') }}">
                             <div class="row">
                                 <div class="col-lg-4 col-sm-12 col-md-12">
-                                    <x-input-with-icon label="Cari Nama Kendaraan" value="{{ Request('nama_kendaraan') }}" name="nama_kendaraan"
+                                    <x-input-with-icon label="Cari Brand" value="{{ Request('brand_name') }}" name="brand_name"
                                         icon="ti ti-search" />
                                 </div>
                                 <div class="col-lg-2 col-sm-12 col-md-12">
@@ -40,35 +39,58 @@
                             <table class="table  table-hover table-bordered table-striped">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>Kode</th>
-                                        <th>Nama Kendaraan</th>
-                                        <th>Nomor Polisi</th>
-                                        <th>Cabang</th>
-                                        <th>Jenis Kendaran</th>
-                                        <th>Owner</th>
+                                        <th>Nama Brand</th>
+                                        <th>Deskripsi</th>
+                                        <th>Status</th>
+                                        <th>Photo</th>
                                         <th>#</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($kendaraan as $d)
+                                    @foreach ($brand as $d)
                                         <tr>
-                                            <td>{{ $d->kode_kendaraan }}</td>
-                                            <td>{{ $d->nama_kendaraan }}</td>
-                                            <td>{{ $d->nomor_polisi }}</td>
-                                            <td>{{ $d->kode_cabang }}</td>
-                                            <td>{{ $d->kode_jeniskendaraan }}</td>
+                                            <td>{{ $d->brand_name }}</td>
+                                            <td>{{ $d->brand_description }}</td>
                                             <td>
-                                                @if ($d->kode_pemilikkendaraan == 'E')
-                                                    <span class="badge bg-success">Eksternal</span>
+                                                @if ($d-> status == 'Active')
+                                                    <span>
+                                                        {{ $d-> status }}
+                                                    </span>
                                                 @else
-                                                    <span class="badge bg-warning">Internal</span>
+                                                    <span>
+                                                        {{ $d-> status }}
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $file = trim((string)($d->brand_image ?? ''));
+                                                @endphp
+
+                                                @if($file !== '')
+                                                    @php
+                                                        // Bangun URL dari field apa adanya (boleh filename atau full URL)
+                                                        $src = \Illuminate\Support\Str::startsWith($file, ['http://','https://'])
+                                                                ? $file
+                                                                : 'https://apisobat.sdn.id/brand-img/'.ltrim($file, '/');
+                                                    @endphp
+
+                                                    <img src="{{ $src }}" alt="{{ $d->brand_name }}"
+                                                        style="height:40px;object-fit:contain;"
+                                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+
+                                                    {{-- Fallback teks, hanya muncul kalau img error --}}
+                                                    <span class="text-muted" style="display:none;">empty</span>
+                                                @else
+                                                    {{-- Field kosong = dianggap tidak ada file --}}
+                                                    <span class="text-muted">empty</span>
                                                 @endif
                                             </td>
                                             <td>
                                                 <div class="d-flex">
-                                                    @can('karyawan.edit')
+                                                    @can('brand.edit')
                                                         <div>
-                                                            <a href="#" class="me-2 btnEdit" nik="{{ Crypt::encrypt($d->nik) }}">
+                                                            <a href="#" class="me-2 btnEdit" brand_name="{{ Crypt::encrypt($d->brand_name) }}">
                                                                 <i class="ti ti-edit text-success"></i>
                                                             </a>
                                                         </div>
@@ -100,7 +122,7 @@
                             </table>
                         </div>
                         <div style="float: right;">
-                            {{ $kendaraan->links() }}
+                            {{ $brand->links() }}
                         </div>
                     </div>
                 </div>
@@ -109,12 +131,10 @@
     </div>
 </div>
 <x-modal-form id="modal" show="loadmodal" />
-<x-modal-form id="modalImport" show="loadmodalImport" size="modal-lg" title="Import Data Kendaraan" />
 @endsection
 @push('myscript')
 <script>
     $(function() {
-
         function loading() {
             $("#loadmodal").html(`<div class="sk-wave sk-primary" style="margin:auto">
             <div class="sk-wave-rect"></div>
@@ -131,40 +151,13 @@
             $("#loadmodal").load("{{ route('kendaraan.create') }}");
         });
 
-        $("#btnImport").click(function() {
-            $("#modalImport").modal("show");
-            $("#loadmodalImport").html(`<div class="sk-wave sk-primary" style="margin:auto">
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            </div>`);
-            $("#loadmodalImport").load("{{ route('karyawan.import') }}");
-        });
-
         $(".btnEdit").click(function() {
             loading();
-            const nik = $(this).attr("nik");
+            const brand_name = $(this).attr("brand_name");
             $("#modal").modal("show");
-            $(".modal-title").text("Edit Data Karyawan");
-            $("#loadmodal").load(`/karyawan/${nik}/edit`);
+            $(".modal-title").text("Edit Data Brand");
+            $("#loadmodal").load(`/sobat/brand/${brand_name}/edit`);
         });
-
-        $(".btnSetJamkerja").click(function() {
-            const nik = $(this).attr("nik");
-            $("#modalSetJamkerja").modal("show");
-            $("#loadmodalSetJamkerja").html(`<div class="sk-wave sk-primary" style="margin:auto">
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            <div class="sk-wave-rect"></div>
-            </div>`);
-
-            $("#loadmodalSetJamkerja").load(`/karyawan/${nik}/setjamkerja`);
-        });
-
 
     });
 </script>

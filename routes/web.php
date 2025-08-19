@@ -35,6 +35,7 @@ use App\Http\Controllers\SlipgajiController;
 use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
+use App\Http\Controllers\BrandController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -444,6 +445,19 @@ Route::middleware('auth')->group(function () {
         // Route::get('/dat/kendaraan/{kode_kendaraan}', 'edit')->name('kendaraan.edit')->can('kendaraan.edit');
         // Route::put('/dat/kendaraan/{kode_kendaraan}', 'update')->name('kendaraan.update')->can('kendaraan.edit');
         // Route::delete('/dat/kendaraan/{kode_kendaraan}/delete', 'destroy')->name('kendaraan.delete')->can('kendaraan.delete');
+    });
+
+    Route::controller(BrandController::class)->group(function () {
+        Route::get('/sobat/brand', 'index')->name('brand.index')->can('brand.index');
+        Route::get('/izinabsen/create', 'create')->name('izinabsen.create')->can('izinabsen.create');
+        Route::post('/izinabsen', 'store')->name('izinabsen.store')->can('izinabsen.create');
+        Route::get('/izinabsen/{kode_izin}/approve', 'approve')->name('izinabsen.approve')->can('izinabsen.approve');
+        Route::delete('/izinabsen/{kode_izin}/cancelapprove', 'cancelapprove')->name('izinabsen.cancelapprove')->can('izinabsen.approve');
+        Route::post('/izinabsen/{kode_izin}/storeapprove', 'storeapprove')->name('izinabsen.storeapprove')->can('izinabsen.approve');
+        Route::get('/sobat/brand/{id}/edit', 'edit')->name('brand.edit')->can('brand.edit');
+        Route::put('/sobat/brand/{id}', 'update')->name('brand.update')->can('brand.edit');
+        Route::get('/izinabsen/{kode_izin}/show', 'show')->name('izinabsen.show')->can('izinabsen.index');
+        Route::delete('/izinabsen/{id}/delete', 'destroy')->name('izinabsen.delete')->can('izinabsen.delete');
     });
 });
 

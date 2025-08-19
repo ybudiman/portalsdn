@@ -155,6 +155,83 @@
                  </ul>
              </li>
          @endif
+         @if (auth()->user()->hasAnyPermission([
+                     'brand.index',
+                 ]))
+             <li
+                 class="menu-item {{ request()->is(['brand', 'jenistunjangan', 'tunjangan', 'bpjskesehatan', 'bpjstenagakerja', 'penyesuaiangaji', 'penyesuaiangaji/*']) ? 'open' : '' }}">
+                 <a href="javascript:void(0);" class="menu-link menu-toggle">
+                     <i class="menu-icon tf-icons ti ti-shopping-cart"></i>
+                     <div>Sobat</div>
+
+                 </a>
+                 <ul class="menu-sub">
+                     @can('brand.index')
+                         <li class="menu-item {{ request()->is(['brand', 'brand/*']) ? 'active' : '' }}">
+                             <a href="{{ route('brand.index') }}" class="menu-link">
+                                 <div>Brand</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('gajipokok.index')
+                         <li class="menu-item {{ request()->is(['gajipokok', 'gajipokok/*']) ? 'active' : '' }}">
+                             <a href="{{ route('gajipokok.index') }}" class="menu-link">
+                                 <div>Kategori</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('tunjangan.index')
+                         <li class="menu-item {{ request()->is(['tunjangan', 'tunjangan/*']) ? 'active' : '' }}">
+                             <a href="{{ route('tunjangan.index') }}" class="menu-link">
+                                 <div>Principal</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('bpjskesehatan.index')
+                         <li class="menu-item {{ request()->is(['bpjskesehatan', 'bpjskesehatan/*']) ? 'active' : '' }}">
+                             <a href="{{ route('bpjskesehatan.index') }}" class="menu-link">
+                                 <div>Produk</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('bpjstenagakerja.index')
+                         <li class="menu-item {{ request()->is(['bpjstenagakerja', 'bpjstenagakerja/*']) ? 'active' : '' }}">
+                             <a href="{{ route('bpjstenagakerja.index') }}" class="menu-link">
+                                 <div>Pelanggan</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('penyesuaiangaji.index')
+                         <li class="menu-item {{ request()->is(['penyesuaiangaji', 'penyesuaiangaji/*']) ? 'active' : '' }}">
+                             <a href="{{ route('penyesuaiangaji.index') }}" class="menu-link">
+                                 <div>Virtual Account</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('slipgaji.index')
+                         <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
+                             <a href="{{ route('slipgaji.index') }}" class="menu-link">
+                                 <div>Order</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('slipgaji.index')
+                         <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
+                             <a href="{{ route('slipgaji.index') }}" class="menu-link">
+                                 <div>Diskon</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('slipgaji.index')
+                         <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
+                             <a href="{{ route('slipgaji.index') }}" class="menu-link">
+                                 <div>Harga</div>
+                             </a>
+                         </li>
+                     @endcan
+                 </ul>
+             </li>
+         @endif
          @if (auth()->user()->hasAnyPermission(['presensi.index']))
              <li class="menu-item {{ request()->is(['presensi', 'presensi/*']) ? 'active' : '' }}">
                  <a href="{{ route('presensi.index') }}" class="menu-link">

@@ -1,4 +1,4 @@
-<form action="{{ route('karyawan.store') }}" id="formcreateKaryawan" method="POST" enctype="multipart/form-data">
+<form action="{{ route('karyawan.store') }}" id="formcreateKendaraan" method="POST" enctype="multipart/form-data">
     @csrf
     <x-input-with-icon-label icon="ti ti-barcode" label="NIK" name="nik" />
     <x-input-with-icon-label icon="ti ti-credit-card" label="No. KTP" name="no_ktp" />
