@@ -10,7 +10,7 @@
     <div class="col-lg-12 col-sm-12 col-xs-12">
         <div class="card">
             <div class="card-header">
-                @can('kendaraan.create')
+                @can('brand.create')
                     <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i> Tambah
                         Brand</a>
                 @endcan
@@ -95,13 +95,13 @@
                                                             </a>
                                                         </div>
                                                     @endcan
-                                                    @can('karyawan.show')
+                                                    <!-- @can('karyawan.show')
                                                         <div>
                                                             <a href="{{ route('karyawan.show', Crypt::encrypt($d->nik)) }}" class="me-2">
                                                                 <i class="ti ti-file-description text-info"></i>
                                                             </a>
                                                         </div>
-                                                    @endcan
+                                                    @endcan -->
                                                     @can('karyawan.delete')
                                                         <div>
                                                             <form method="POST" name="deleteform" class="deleteform me-1"
@@ -147,8 +147,8 @@
         loading();
         $("#btnCreate").click(function() {
             $("#modal").modal("show");
-            $(".modal-title").text("Tambah Data Kendaraan");
-            $("#loadmodal").load("{{ route('kendaraan.create') }}");
+            $(".modal-title").text("Tambah Data Brand");
+            $("#loadmodal").load("{{ route('brand.create') }}");
         });
 
         $(".btnEdit").click(function() {

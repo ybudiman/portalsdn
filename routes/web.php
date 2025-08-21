@@ -449,33 +449,43 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(BrandController::class)->group(function () {
         Route::get('/sobat/brand', 'index')->name('brand.index')->can('brand.index');
-        Route::get('/izinabsen/create', 'create')->name('izinabsen.create')->can('izinabsen.create');
-        Route::post('/izinabsen', 'store')->name('izinabsen.store')->can('izinabsen.create');
-        Route::get('/izinabsen/{kode_izin}/approve', 'approve')->name('izinabsen.approve')->can('izinabsen.approve');
-        Route::delete('/izinabsen/{kode_izin}/cancelapprove', 'cancelapprove')->name('izinabsen.cancelapprove')->can('izinabsen.approve');
-        Route::post('/izinabsen/{kode_izin}/storeapprove', 'storeapprove')->name('izinabsen.storeapprove')->can('izinabsen.approve');
+        Route::get('/sobat/brand/create', 'create')->name('brand.create')->can('brand.create');
+        Route::post('/sobat/brand', 'store')->name('brand.store')->can('brand.create');
         Route::get('/sobat/brand/{id}/edit', 'edit')->name('brand.edit')->can('brand.edit');
         Route::put('/sobat/brand/{id}', 'update')->name('brand.update')->can('brand.edit');
-        Route::get('/izinabsen/{kode_izin}/show', 'show')->name('izinabsen.show')->can('izinabsen.index');
         Route::delete('/izinabsen/{id}/delete', 'destroy')->name('izinabsen.delete')->can('izinabsen.delete');
     });
+    // Route::controller(BrandController::class)
+    // ->prefix('sobat/brand')
+    // ->name('brand.')
+    // ->group(function () {
+    //     Route::get('/',            'index')->name('index')->can('brand.index');
+    //     Route::get('/create',      'create')->name('create')->can('brand.create');
+    //     Route::post('/',           'store')->name('store')->can('brand.create');
+
+    //     // gunakan implicit model binding: {brand} = App\Models\SobatBrand $brand
+    //     Route::get('/{brand}/edit','edit')->name('edit')->can('brand.edit');
+    //     Route::put('/{brand}',     'update')->name('update')->can('brand.edit');
+    //     Route::get('/{brand}',     'show')->name('show')->can('brand.index');
+    //     Route::delete('/{brand}',  'destroy')->name('destroy')->can('brand.delete');
+    // });
 });
 
-Route::get('/debug/fileinfo', function () {
-    return [
-        'extension_loaded' => extension_loaded('fileinfo'),
-        'function_exists'  => function_exists('finfo_open'),
-        'php_version'      => PHP_VERSION,
-        'sapi'             => php_sapi_name(),
-        'upload_max_filesize' => ini_get('upload_max_filesize'),
-        'post_max_size'       => ini_get('post_max_size'),
-    ];
-});
+// Route::get('/debug/fileinfo', function () {
+//     return [
+//         'extension_loaded' => extension_loaded('fileinfo'),
+//         'function_exists'  => function_exists('finfo_open'),
+//         'php_version'      => PHP_VERSION,
+//         'sapi'             => php_sapi_name(),
+//         'upload_max_filesize' => ini_get('upload_max_filesize'),
+//         'post_max_size'       => ini_get('post_max_size'),
+//     ];
+// });
 
-Route::get('/debug/sobat-config', fn() => [
-  'upload_url' => config('services.sobat.upload_url'),
-  'token_is_set' => !empty(config('services.sobat.upload_token')),
-]);
+// Route::get('/debug/sobat-config', fn() => [
+//   'upload_url' => config('services.sobat.upload_url'),
+//   'token_is_set' => !empty(config('services.sobat.upload_token')),
+// ]);
 
 
 Route::get('/createrolepermission', function () {

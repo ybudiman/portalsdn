@@ -1,8 +1,20 @@
 <form action="{{ route('brand.update', Crypt::encrypt($brand->brand_name)) }}" method="POST" id="formBrand" enctype="multipart/form-data">
    @csrf
    @method('PUT')
+   <label class="form-label">Nama Brand</label>
    <x-input-with-icon label="Brand Name" name="brand_name" icon="ti ti-barcode" value="{{ $brand->brand_name }}" disabled />
+   <label class="form-label">Deskripsi Brand</label>
    <x-input-with-icon label="Description" name="brand_description" icon="ti ti-building" value="{{ old('brand_description', $brand->brand_description) }}" />
+   <div class="form-group mb-3">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+            <option value="Active"   {{ old('status', $brand->status) === 'Active'   ? 'selected' : '' }}>Active</option>
+            <option value="Inactive" {{ old('status', $brand->status) === 'Inactive' ? 'selected' : '' }}>Inactive</option>
+      </select>
+      @error('status')
+         <div class="text-danger small mt-1">{{ $message }}</div>
+      @enderror
+   </div>
    @php
        $file = trim((string)($brand->brand_image ?? ''));
        $src  = $file === ''

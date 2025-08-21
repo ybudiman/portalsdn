@@ -1,87 +1,59 @@
-@extends('layouts.app')
+<form action="{{ route('brand.store') }}" id="formCreateBrand" method="POST" enctype="multipart/form-data">
+  @csrf
 
-@section('title','Add Brand')
-@section('menuSuperadminBrand','bg-primary text-white active')
-<!-- @livewire('sobat.superadmin.user.index') -->
- @section('content')
-    <!-- Page Heading -->
-    <h1 class="h3 mb-4 text-gray-800">
-        <i class="fas fa-plus mr-2"></i>
-        @yield('title')
-    </h1>
+  {{-- BRAND NAME --}}
+  <x-input-with-icon-label
+      icon="ti ti-barcode"
+      label="Brand Name"
+      name="brand_name"
+      value="{{ old('brand_name') }}" />
+  @error('brand_name') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
 
-    <div class="card">
-        <div class="card-header bg-primary">
-            <div class="d-flex justify-content-between">
-                <div class="mb-1 mr-2">
-                    <a href="{{ route('brand') }}" class="btn btn-sm btn-success">
-                        <i class="fas fa-arrow-left mr-1"></i>
-                        Back
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <form action="{{ route('brandStore') }}" method="post" enctype="multipart/form-data">
-                @csrf
-                <div class="row">
-                    <div class="col-12 mb-2">
-                        <label class="form-label">
-                            <span class="text-danger">
-                                *
-                            </span>
-                            Brand Name :
-                        </label>
-                        <input class="form-control @error('brandname') is-invalid @enderror" type="text" name="brandname" value="{{ old('brandname') }}"></input>
-                        @error('brandname')
-                            <small class="text-danger">
-                                {{ $message }}
-                            </small>
-                        @enderror
-                    </div>
-                    <div class="col-12 mb-2">
-                        <label class="form-label">
-                            Description :
-                        </label>
-                        <textarea class="form-control @error('branddescription') is-invalid @enderror" id="content" name="branddescription">{{ old('branddescription') }}</textarea>
-                        @error('branddescription')
-                            <small class="text-danger">
-                                {{ $message }}
-                            </small>
-                        @enderror
-                    </div>
-                    <div class="col-12 mb-2">
-                        <label class="form-label">
-                            Status :
-                        </label>
-                        <select class="form-control @error('brandstatus') is-invalid @enderror" name="brandstatus">
-                            <option selected disabled>-- Choose --</option>
-                            <option value="Active">Active</option>
-                            <option value="InActive">InActive</option>
-                        </select>
-                        @error('brandstatus')
-                            <small class="text-danger">
-                                {{ $message }}
-                            </small>
-                        @enderror
-                    </div>
-                    <div class="col-12 mb-2">
-                        <label class="form-label">
-                            Upload Photo (200x200px, max 20KB):
-                        </label>
-                        <input type="file" class="form-control @error('brandphoto') is-invalid @enderror" name="brandphoto" accept="image/*">
-                        @error('brandphoto')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
-                    <div class="col-12 mb-2">
-                        <button type="submit" class="btn btn-sm btn-primary">
-                            <i class="fas fa-save mr-1"></i>
-                            Save
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+  {{-- DESCRIPTION --}}
+  <x-input-with-icon-label
+      icon="ti ti-building"
+      label="Description"
+      name="brand_description"
+      value="{{ old('brand_description') }}" />
+  @error('brand_description') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
+
+  {{-- STATUS --}}
+  <div class="form-group mb-3">
+    <label class="form-label" style="font-weight:600">Status</label>
+    @php $st = old('status', 'Active'); @endphp
+    <select name="status" class="form-select">
+      <option value="Active"   {{ $st === 'Active'   ? 'selected' : '' }}>Active</option>
+      <option value="Inactive" {{ $st === 'Inactive' ? 'selected' : '' }}>Inactive</option>
+    </select>
+    @error('status') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+  </div>
+
+  {{-- BRAND PHOTO (preview + upload) --}}
+  @php $placeholder = asset('images/placeholder-brand.png'); @endphp
+  <div class="form-group mb-3">
+    <label class="form-label" style="font-weight:600">Brand Photo</label>
+    <div class="d-flex align-items-center gap-3">
+      <img id="previewBrandImage" src="{{ $placeholder }}" alt="preview"
+           style="height:64px;object-fit:contain;border:1px solid #eee;border-radius:.5rem;padding:4px;background:#fff;"
+           onerror="this.src='{{ $placeholder }}'">
+      <div class="flex-grow-1">
+        <input type="file" name="brand_image_file" id="brand_image_file" class="form-control" accept="image/*">
+        <small class="text-muted">Opsional. Jika diisi, file akan diunggah dan nama file mengikuti Brand Name.</small>
+      </div>
     </div>
-@endsection
+    @error('brand_image_file') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+  </div>
+
+  <div class="form-group mb-3">
+    <button class="btn btn-primary w-100" type="submit">
+      <i class="ti ti-send me-1"></i> Submit
+    </button>
+  </div>
+</form>
+
+<script>
+  document.getElementById('brand_image_file')?.addEventListener('change', function (e) {
+    const f = e.target.files?.[0];
+    if (f) document.getElementById('previewBrandImage').src = URL.createObjectURL(f);
+  });
+</script>
