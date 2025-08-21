@@ -461,6 +461,22 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+Route::get('/debug/fileinfo', function () {
+    return [
+        'extension_loaded' => extension_loaded('fileinfo'),
+        'function_exists'  => function_exists('finfo_open'),
+        'php_version'      => PHP_VERSION,
+        'sapi'             => php_sapi_name(),
+        'upload_max_filesize' => ini_get('upload_max_filesize'),
+        'post_max_size'       => ini_get('post_max_size'),
+    ];
+});
+
+Route::get('/debug/sobat-config', fn() => [
+  'upload_url' => config('services.sobat.upload_url'),
+  'token_is_set' => !empty(config('services.sobat.upload_token')),
+]);
+
 
 Route::get('/createrolepermission', function () {
 

@@ -1,8 +1,8 @@
-<form action="{{ route('brand.update', Crypt::encrypt($brand->brand_name)) }}" method="POST" id="formBrand">
+<form action="{{ route('brand.update', Crypt::encrypt($brand->brand_name)) }}" method="POST" id="formBrand" enctype="multipart/form-data">
    @csrf
    @method('PUT')
    <x-input-with-icon label="Brand Name" name="brand_name" icon="ti ti-barcode" value="{{ $brand->brand_name }}" disabled />
-   <x-input-with-icon label="Description" name="nama_dept" icon="ti ti-building" value="{{ $brand->brand_description }}" />
+   <x-input-with-icon label="Description" name="brand_description" icon="ti ti-building" value="{{ old('brand_description', $brand->brand_description) }}" />
    @php
        $file = trim((string)($brand->brand_image ?? ''));
        $src  = $file === ''
@@ -27,8 +27,14 @@
       <input type="hidden" name="brand_image_old" value="{{ $brand->brand_image }}">
    </div>
 
-   <di class="form-group mb-3">
+   <div class="form-group mb-3">
       <button class="btn btn-primary w-100"><i class="ti ti-send me-1"></i> Submit</button>
-   </di>
+   </div>
 </form>
-<script src="{{ asset('assets/js/pages/departemen.js') }}"></script>
+<!-- <script src="{{ asset('assets/js/pages/departemen.js') }}"></script> -->
+<script>
+document.getElementById('brand_image_file')?.addEventListener('change', function (e) {
+  const f = e.target.files?.[0];
+  if (f) document.getElementById('previewBrandImage').src = URL.createObjectURL(f);
+});
+</script>

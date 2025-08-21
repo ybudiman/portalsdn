@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\SobatBrand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\ConnectionException;
 
 class BrandController extends Controller
 {
@@ -30,177 +33,86 @@ class BrandController extends Controller
         return view('sobat.brand.edit', $data);
     }
 
-    // Function create on view
-    // public function create(){
-    //     $data=array(
-    //         'title'             => 'Add Brand',
-    //         'menuCategory'      => 'active',
-    //     );
-    //     return view('sobat/superadmin/brand/create',$data);
-    // }
+    public function update(Request $request, $encName)
+    {
+        $brandName = Crypt::decrypt($encName);
+        $brand = SobatBrand::where('brand_name', $brandName)->firstOrFail();
 
-    // // Function show image
-    // public function showImage($filename)
-    // {
-    //     $disk = Storage::disk('minio');
+        // Validasi: pakai file|mimes (lebih toleran daripada 'image')
+        $request->validate([
+            'brand_description' => ['nullable','string'],
+            'status'            => ['nullable','in:Active,Inactive,active,inactive,1,0,Y,N,true,false'],
+            'brand_image_file'  => ['nullable','file','mimes:jpeg,jpg,png,webp,gif,jfif','max:5120'],
+        ]);
 
-    //     $filePath = 'brands/' . $filename; 
-    //     $filePathFallback = 'brands/no-image.png'; 
+        // Update teks (pakai has agar bisa di-blank)
+        if ($request->has('brand_description')) {
+            $brand->brand_description = $request->brand_description;
+        }
+        if ($request->filled('status')) {
+            $brand->status = $this->normalizeStatus($request->status);
+        }
 
-    //     if ($disk->exists($filePath)) {
-    //         $file = $disk->get($filePath);
-    //         $mime = $disk->mimeType($filePath);
-    //     } else {
-    //         $file = $disk->get($filePathFallback);
-    //         $mime = $disk->mimeType($filePathFallback);
-    //     }
+        $uploadUrl = config('services.sobat.upload_url') ?: env('SOBAT_UPLOAD_URL');
+        $token     = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
 
-    //     return response($file)->header('Content-Type', $mime);
-    // }
+        Log::info('SOBAT upload config', ['url' => $uploadUrl, 'has_token' => !empty($token)]);
 
-    // // Function save to database
-    // public function store(Request $request){
-    //     if (SobatBrand::where('brand_name', $request->categoryname)->exists()) {
-    //         return back()->withErrors(['brandname' => 'Brand name already exists.'])->withInput();
-    //     }
+        if ($request->hasFile('brand_image_file')) {
+            if (empty($uploadUrl) || empty($token)) {
+                return back()->with('error', 'Konfigurasi upload belum diset (URL/token kosong).')->withInput();
+            }
 
-    //     $request->validate([
-    //        'brandname'               => 'required',
-    //        'branddescription'        => 'required',
-    //        'brandstatus'             => 'required',
-    //        'brandphoto'              => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-    //     ],[
-    //         'brandname.required'                => 'Brand name can not be empty !!',
-    //         'branddescription.required'         => 'Brand description can not be empty !!',
-    //         'brandstatus.required'              => 'Status can not be empty !!',
-    //     ]);
+            $file = $request->file('brand_image_file');
 
-    //     try {
-    //             $path = null;
+            Log::info('Uploading brand image...', [
+                'brand'       => $brand->brand_name,
+                'client_name' => $file->getClientOriginalName(),
+                'mime'        => $file->getMimeType(),
+                'size'        => $file->getSize(),
+            ]);
 
-    //             // Upload dan update
-    //             if ($request->hasFile('brandphoto')) {
-    //                 $file = $request->file('brandphoto');
+            try {
+                $resp = Http::withToken($token)
+                    ->timeout(30)
+                    // Jika ada masalah SSL sementara: ->withOptions(['verify' => false])
+                    ->attach('file', fopen($file->getRealPath(), 'r'), $file->getClientOriginalName())
+                    ->post($uploadUrl, [
+                        'brand_name' => $brand->brand_name,
+                        'overwrite'  => '1',
+                    ]);
 
-    //                 // Validate size
-    //                 if ($file->getSize() > 20480) {
-    //                     return back()->withErrors(['brandphoto' => 'Image size must not exceed 20 KB.'])->withInput();
-    //                 }
+                Log::info('Upload response', ['status' => $resp->status(), 'body' => $resp->body()]);
 
-    //                 // Validate dimension
-    //                 list($width, $height) = getimagesize($file);
-    //                 if ($width > 200 || $height > 200) {
-    //                     return back()->withErrors(['brandphoto' => 'Image dimensions less than 200x200 pixels.'])->withInput();
-    //                 }
+                if (!$resp->successful()) {
+                    return back()->with('error', 'Upload gagal: '.$resp->status().' '.$resp->body())->withInput();
+                }
 
-    //                 // Save to database
-    //                 $brand = SobatBrand::create([
-    //                     'brand_name'        => $request->brandname,
-    //                     'brand_description' => $request->branddescription,
-    //                     'status'            => $request->brandstatus,
-    //                     'brand_image'       => null, 
-    //                 ]);
+                $payload = $resp->json();
+                if (empty($payload['filename'])) {
+                    return back()->with('error', 'Upload gagal: response tanpa filename')->withInput();
+                }
 
-    //                 $extension = $file->getClientOriginalExtension();
-    //                 $filename = $brand->id . '.' . $extension;
+                // Simpan filename dari API upload
+                $brand->brand_image = $payload['filename'];
+            } catch (ConnectionException $e) {
+                Log::error('Upload connection error', ['message' => $e->getMessage()]);
+                return back()->with('error', 'Upload gagal (koneksi): '.$e->getMessage())->withInput();
+            } catch (\Throwable $e) {
+                Log::error('Upload unexpected error', ['message' => $e->getMessage()]);
+                return back()->with('error', 'Upload gagal (server): '.$e->getMessage())->withInput();
+            }
+        }
 
-    //                 // Save to folder 'brands' in MinIO
-    //                 $path = Storage::disk('minio')->putFileAs('brands', $file, $filename);
+        $brand->save();
+        return back()->with('success', 'Brand berhasil diupdate.');
+    }
 
-    //                 // Update field brand_image
-    //                 $brand->update([
-    //                     'brand_image' => $path, 
-    //                 ]);
-    //             }
-    //         return redirect()->route('brand')->with('success', 'Brand added successfully.');
-    //     } catch (Exception $e) {
-    //         dd('Upload Error: ' . $e->getMessage());
-    //     }
-    // }
-
-    // public function edit($id){
-    //     $data=array(
-    //         'title'             => 'Edit Brand',
-    //         'menuBrand'      => 'active',
-    //         'brandedit'          => SobatBrand::findOrFail($id),
-    //     );
-    //     return view('sobat/superadmin/brand/edit',$data);
-    // }
-
-    // public function update(Request $request, $id){
-    //     $request->validate([
-    //        'branddescription'        => 'required',
-    //        'brandstatus'             => 'required',
-    //        'brandphoto'              => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-    //     ],[
-    //         'branddescription.required'         => 'Brand description can not be empty !!',
-    //         'brandstatus.required'              => 'Status can not be empty !!',
-    //     ]);
-
-    //     try {
-    //             $path = null;
-    //             $brand = SobatBrand::findOrFail($id);
-
-    //             // Update field 
-    //             $brand->brand_description = $request->branddescription;
-    //             $brand->status            = $request->brandstatus;
-
-    //             if ($request->hasFile('brandphoto')) {
-    //                 $file = $request->file('brandphoto');
-                    
-    //                 if ($file->getSize() > 20480) {
-    //                     return back()->withErrors(['brandphoto' => 'Image size must not exceed 20 KB.'])->withInput();
-    //                 }
-
-    //                 list($width, $height) = getimagesize($file);
-    //                 if ($width > 200 || $height > 200) {
-    //                     return back()->withErrors(['brandphoto' => 'Image dimensions must be exactly 200x200 pixels.'])->withInput();
-    //                 }
-
-    //                 $extension = $file->getClientOriginalExtension();
-    //                 $filename = $id . '.' . $extension;
-
-    //                 $path = Storage::disk('minio')->putFileAs('brands', $file, $filename);
-
-    //                 $brand->brand_image = $path;
-    //             }
-
-    //             $brand->save();
-
-    //         return redirect()->route('brand')->with('success', 'Brand successfully updated.');
-    //     } catch (Exception $e) {
-    //         dd('Upload Error: ' . $e->getMessage());
-    //     }
-    // }
-
-    // public function destroy($id){
-    //     $brand = SobatBrand::findOrFail($id);
-    //     $brand->delete();
-    //     $path = $brand->brand_image;
-    //     Storage::disk('minio')->delete($path);
-    //     return redirect()->route('brand')->with('success', 'Category successfully deleted.');
-    // }
-
-    // public function filter(Request $request)
-    // {
-    //     $query = SobatBrand::query();
-
-    //     if ($request->filled('brand_name')) {
-    //         $query->where('brand_name', 'like', '%' . $request->brand_name . '%');
-    //     }
-
-    //     if ($request->filled('status')) {
-    //         $query->where('status', $request->status);
-    //     }
-
-    //     $brand = $query->get();
-
-    //     $data = [
-    //         'title' => 'Brand',
-    //         'menuBrand' => 'active',
-    //         'brand' => $brand,
-    //     ];
-
-    //     return view('sobat/superadmin/brand/index', $data);
-    // }
+    private function normalizeStatus($v): string
+    {
+        $v = strtolower(trim((string)$v));
+        if (in_array($v, ['active','aktif','1','y','true','yes'], true))     return 'Active';
+        if (in_array($v, ['inactive','nonaktif','0','n','false','no'], true)) return 'Inactive';
+        return 'Active';
+    }
 }

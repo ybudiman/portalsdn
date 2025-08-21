@@ -36,4 +36,9 @@ return [
         'webhook_url' => env('N8N_WEBHOOK_URL'),
     ],
 
+    'sobat' => [
+        'upload_url'   => env('SOBAT_UPLOAD_URL', 'https://apisobat.sdn.id/upload-brand-image'),
+        'upload_token' => env('SOBAT_UPLOAD_TOKEN', 'SDNhYAmDK4NHIsge9qzHKeZh2Y6IlNnO3Wy'),
+    ],
+
 ];
