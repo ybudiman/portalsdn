@@ -67,22 +67,23 @@
                                                     $file = trim((string)($d->brand_image ?? ''));
                                                 @endphp
 
-                                                @if($file !== '')
+                                                @if ($file !== '')
                                                     @php
-                                                        // Bangun URL dari field apa adanya (boleh filename atau full URL)
-                                                        $src = \Illuminate\Support\Str::startsWith($file, ['http://','https://'])
-                                                                ? $file
-                                                                : 'https://apisobat.sdn.id/brand-img/'.ltrim($file, '/');
+                                                    // Bangun base URL (boleh filename atau URL penuh)
+                                                    $base = \Illuminate\Support\Str::startsWith($file, ['http://','https://'])
+                                                            ? $file
+                                                            : 'https://apisobat.sdn.id/brand-img/' . ltrim($file,'/');
+
+                                                    // Versi untuk cache-busting: pakai updated_at agar berubah saat record disave
+                                                    $ver  = $d->updated_at ? (\Illuminate\Support\Carbon::parse($d->updated_at)->timestamp) : time();
+                                                    $src  = $base . (str_contains($base,'?') ? '&' : '?') . 'v=' . $ver;
                                                     @endphp
 
                                                     <img src="{{ $src }}" alt="{{ $d->brand_name }}"
                                                         style="height:40px;object-fit:contain;"
                                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-
-                                                    {{-- Fallback teks, hanya muncul kalau img error --}}
                                                     <span class="text-muted" style="display:none;">empty</span>
                                                 @else
-                                                    {{-- Field kosong = dianggap tidak ada file --}}
                                                     <span class="text-muted">empty</span>
                                                 @endif
                                             </td>
@@ -102,15 +103,14 @@
                                                             </a>
                                                         </div>
                                                     @endcan -->
-                                                    @can('karyawan.delete')
+                                                    @can('brand.delete')
                                                         <div>
-                                                            <form method="POST" name="deleteform" class="deleteform me-1"
-                                                                action="{{ route('karyawan.delete', Crypt::encrypt($d->nik)) }}">
+                                                            <form method="POST" action="{{ route('brand.destroy', $d->id) }}" class="deleteform d-inline">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <a href="#" class="delete-confirm ml-1">
+                                                                <button type="button" class="btn btn-link p-0 delete-confirm" title="Delete">
                                                                     <i class="ti ti-trash text-danger"></i>
-                                                                </a>
+                                                                </button>
                                                             </form>
                                                         </div>
                                                     @endcan
@@ -157,6 +157,25 @@
             $("#modal").modal("show");
             $(".modal-title").text("Edit Data Brand");
             $("#loadmodal").load(`/sobat/brand/${brand_name}/edit`);
+        });
+
+        $(document).on('click', '.delete-confirm', function (e) {
+        e.preventDefault();
+        const form = $(this).closest('form');
+
+        Swal.fire({
+            title: 'Hapus brand ini?',
+            text: 'Tindakan ini tidak bisa dibatalkan.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, hapus',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+            form.trigger('submit');
+            }
+        });
         });
 
     });

@@ -447,28 +447,26 @@ Route::middleware('auth')->group(function () {
         // Route::delete('/dat/kendaraan/{kode_kendaraan}/delete', 'destroy')->name('kendaraan.delete')->can('kendaraan.delete');
     });
 
-    Route::controller(BrandController::class)->group(function () {
-        Route::get('/sobat/brand', 'index')->name('brand.index')->can('brand.index');
-        Route::get('/sobat/brand/create', 'create')->name('brand.create')->can('brand.create');
-        Route::post('/sobat/brand', 'store')->name('brand.store')->can('brand.create');
-        Route::get('/sobat/brand/{id}/edit', 'edit')->name('brand.edit')->can('brand.edit');
-        Route::put('/sobat/brand/{id}', 'update')->name('brand.update')->can('brand.edit');
-        Route::delete('/izinabsen/{id}/delete', 'destroy')->name('izinabsen.delete')->can('izinabsen.delete');
-    });
-    // Route::controller(BrandController::class)
-    // ->prefix('sobat/brand')
-    // ->name('brand.')
-    // ->group(function () {
-    //     Route::get('/',            'index')->name('index')->can('brand.index');
-    //     Route::get('/create',      'create')->name('create')->can('brand.create');
-    //     Route::post('/',           'store')->name('store')->can('brand.create');
-
-    //     // gunakan implicit model binding: {brand} = App\Models\SobatBrand $brand
-    //     Route::get('/{brand}/edit','edit')->name('edit')->can('brand.edit');
-    //     Route::put('/{brand}',     'update')->name('update')->can('brand.edit');
-    //     Route::get('/{brand}',     'show')->name('show')->can('brand.index');
-    //     Route::delete('/{brand}',  'destroy')->name('destroy')->can('brand.delete');
+    // Route::controller(BrandController::class)->group(function () {
+    //     Route::get('/sobat/brand', 'index')->name('brand.index')->can('brand.index');
+    //     Route::get('/sobat/brand/create', 'create')->name('brand.create')->can('brand.create');
+    //     Route::post('/sobat/brand', 'store')->name('brand.store')->can('brand.create');
+    //     Route::get('/sobat/brand/{id}/edit', 'edit')->name('brand.edit')->can('brand.edit');
+    //     Route::put('/sobat/brand/{id}', 'update')->name('brand.update')->can('brand.edit');
+    //     Route::delete('/sobat/brand/{id}/delete', 'destroy')->name('brand.delete')->can('brand.delete');
     // });
+    Route::controller(BrandController::class)->group(function () {
+        Route::get   ('/sobat/brand',            'index')->name('brand.index')->can('brand.index');
+        Route::get   ('/sobat/brand/create',     'create')->name('brand.create')->can('brand.create');
+        Route::post  ('/sobat/brand',            'store')->name('brand.store')->can('brand.create');
+        Route::get   ('/sobat/brand/{id}/edit',  'edit')->name('brand.edit')->can('brand.edit');
+        Route::put   ('/sobat/brand/{id}',       'update')->name('brand.update')->can('brand.edit');
+
+        // ⬇️ ini yang penting
+        Route::delete('/sobat/brand/{id}',       'destroy')->name('brand.destroy')->can('brand.delete');
+        // (opsional) alias lama agar tetap jalan:
+        Route::delete('/sobat/brand/{id}/delete','destroy')->name('brand.delete')->can('brand.delete');
+    });
 });
 
 // Route::get('/debug/fileinfo', function () {

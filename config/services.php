@@ -38,6 +38,7 @@ return [
 
     'sobat' => [
         'upload_url'   => env('SOBAT_UPLOAD_URL', 'https://apisobat.sdn.id/upload-brand-image'),
+        'delete_url'   => env('SOBAT_DELETE_URL',  'https://apisobat.sdn.id/delete-brand-image.php'),
         'upload_token' => env('SOBAT_UPLOAD_TOKEN', 'SDNhYAmDK4NHIsge9qzHKeZh2Y6IlNnO3Wy'),
     ],
 

@@ -154,4 +154,77 @@ class BrandController extends Controller
         if (in_array($v, ['inactive','nonaktif','0','n','false','no'], true)) return 'Inactive';
         return 'Active';
     }
+
+    public function destroy($id)
+    {
+        $brand = SobatBrand::find($id);
+        if (!$brand) {
+            return back()->with('error', 'Data brand tidak ditemukan.');
+        }
+
+        // simpan dulu filename untuk hapus remote
+        $filename = trim((string)($brand->brand_image ?? ''));
+
+        // 1) Hapus record DB
+        $brand->delete();
+
+        // 2) Hapus file di server upload (opsional; tidak menghalangi sukses DB)
+        $remoteOk = true;
+        if ($filename !== '') {
+            $remoteOk = $this->deleteFromSobat($filename);
+        }
+
+        if ($remoteOk) {
+            return back()->with('success', 'Brand & file gambar berhasil dihapus.');
+        }
+        return back()->with('warning', 'Brand terhapus, namun file gambar gagal dihapus dari server.');
+    }
+
+    /**
+     * Hapus file pada server upload Sobat.
+     * Terima filename atau full URL (akan diambil basename-nya).
+     */
+    private function deleteFromSobat(string $value): bool
+    {
+        $token = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
+        $url   = config('services.sobat.delete_url') ?: env('SOBAT_DELETE_URL');
+
+        if (empty($token) || empty($url)) {
+            Log::warning('SOBAT delete config empty', ['url'=>$url,'has_token'=>!empty($token)]);
+            return false;
+        }
+
+        // ekstrak filename jika yang dikirim URL penuh
+        $filename = $this->extractFilename($value);
+
+        try {
+            // Banyak server menolak body di DELETE → pakai POST sederhana
+            $resp = Http::withToken($token)->timeout(20)->post($url, [
+                'filename' => $filename,
+            ]);
+            Log::info('Delete response', ['status'=>$resp->status(), 'body'=>$resp->body()]);
+
+            if ($resp->successful()) {
+                return true;
+            }
+
+            // anggap sukses jika file tidak ada di server tujuan
+            if ($resp->status() === 200 && str_contains($resp->body(), 'not_found')) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            Log::error('Delete remote file error', ['msg'=>$e->getMessage()]);
+        }
+        return false;
+    }
+
+    private function extractFilename(string $v): string
+    {
+        $v = trim($v);
+        if (preg_match('~^https?://~i', $v)) {
+            $path = parse_url($v, PHP_URL_PATH) ?? '';
+            return basename($path);
+        }
+        return basename($v);
+    }
 }
