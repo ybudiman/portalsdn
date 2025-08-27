@@ -36,6 +36,7 @@ use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\SalesOrderController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -466,6 +467,24 @@ Route::middleware('auth')->group(function () {
         Route::delete('/sobat/brand/{id}',       'destroy')->name('brand.destroy')->can('brand.delete');
         // (opsional) alias lama agar tetap jalan:
         Route::delete('/sobat/brand/{id}/delete','destroy')->name('brand.delete')->can('brand.delete');
+    });
+
+    Route::controller(SalesOrderController::class)
+    ->prefix('sobat/orders')     // URL: /sobat/orders/...
+    ->name('orders.')            // route name: orders.*
+    ->group(function () {
+        // List + filter
+        Route::get('/',                 'index')->name('index')->can('orders.index');
+
+        // Detail
+        Route::get('/{order_code}',     'show')->name('show')->can('orders.index');
+
+        // Edit / Update (opsional, kalau dipakai)
+        Route::get('/{order_code}/edit','edit')->name('edit')->can('orders.edit');
+        Route::put('/{order_code}',     'update')->name('update')->can('orders.edit');
+
+        // Delete
+        Route::delete('/{order_code}',  'destroy')->name('destroy')->can('orders.delete');
     });
 });
 

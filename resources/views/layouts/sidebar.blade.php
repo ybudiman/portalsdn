@@ -157,9 +157,10 @@
          @endif
          @if (auth()->user()->hasAnyPermission([
                      'brand.index',
+                     'orders.index',
                  ]))
              <li
-                 class="menu-item {{ request()->is(['brand', 'jenistunjangan', 'tunjangan', 'bpjskesehatan', 'bpjstenagakerja', 'penyesuaiangaji', 'penyesuaiangaji/*']) ? 'open' : '' }}">
+                 class="menu-item {{ request()->is(['brand', 'orders', 'jenistunjangan', 'tunjangan', 'bpjskesehatan', 'bpjstenagakerja', 'penyesuaiangaji', 'penyesuaiangaji/*']) ? 'open' : '' }}">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">
                      <i class="menu-icon tf-icons ti ti-shopping-cart"></i>
                      <div>Sobat</div>
@@ -208,13 +209,13 @@
                              </a>
                          </li>
                      @endcan
-                     @can('slipgaji.index')
-                         <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
-                             <a href="{{ route('slipgaji.index') }}" class="menu-link">
-                                 <div>Order</div>
-                             </a>
-                         </li>
-                     @endcan
+                     @can('orders.index')
+                        <li class="menu-item {{ request()->is(['sobat/orders','sobat/orders/*']) ? 'active' : '' }}">
+                        <a href="{{ route('orders.index') }}" class="menu-link">
+                            <div>Orders</div>
+                        </a>
+                        </li>
+                    @endcan
                      @can('slipgaji.index')
                          <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
                              <a href="{{ route('slipgaji.index') }}" class="menu-link">
