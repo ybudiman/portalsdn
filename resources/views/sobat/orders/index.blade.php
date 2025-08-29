@@ -67,7 +67,7 @@
                 <th>User</th>
                 <th>Delivery</th>
                 <th>Status</th>
-                <th>Alamat Ship To</th>
+                <!-- <th>Alamat Ship To</th> -->
                 <th class="text-center" style="width:120px">#</th>
               </tr>
             </thead>
@@ -83,13 +83,14 @@
                     @php $ok = in_array($o->status, ['Approved','Delivered','Active','Submitted','Shipped']); @endphp
                     <span class="badge {{ $ok ? 'bg-success' : 'bg-secondary' }}">{{ $o->status }}</span>
                   </td>
-                  <td>{{ $o->alamat }}</td>
+                  <!-- <td>{{ $o->alamat }}</td> -->
                   <td class="text-center">
                     <a href="{{ route('orders.show', $o->order_code) }}" class="me-2" title="Detail">
                       <i class="ti ti-file-description text-info"></i>
                     </a>
                     @can('orders.edit')
-                      <a href="{{ route('orders.edit', $o->order_code) }}" class="me-2" title="Edit">
+                      {{-- trigger modal, jangan direct ke route --}}
+                      <a href="#" class="me-2 btnEditOrder" data-code="{{ $o->order_code }}" data-status="{{ strtolower($o->status) }}" title="Edit">
                         <i class="ti ti-edit text-success"></i>
                       </a>
                     @endcan
@@ -120,6 +121,7 @@
     </div>
   </div>
 </div>
+<x-modal-form id="modal" show="loadmodal" />
 @endsection
 
 @push('myscript')
@@ -141,6 +143,40 @@
       cancelButtonText: 'Batal',
       reverseButtons: true
     }).then((res)=>{ if(res.isConfirmed) form.submit(); });
+  });
+
+  // Loader sederhana untuk isi modal
+  function loadingModal() {
+    const html = `
+      <div class="sk-wave sk-primary" style="margin:auto">
+        <div class="sk-wave-rect"></div>
+        <div class="sk-wave-rect"></div>
+        <div class="sk-wave-rect"></div>
+        <div class="sk-wave-rect"></div>
+        <div class="sk-wave-rect"></div>
+      </div>
+    `;
+    $("#loadmodal").html(html);
+  }
+
+  // Helper membangun URL edit dari route Blade (pakai placeholder)
+  function editUrl(code) {
+    const base = "{{ route('orders.edit', ':code') }}"; // "/sobat/orders/:code/edit"
+    return base.replace(':code', encodeURIComponent(code));
+  }
+
+  // Klik tombol edit → buka modal dan load view edit
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('.btnEditOrder');
+    if (!btn) return;
+
+    e.preventDefault();
+    const code = btn.dataset.code;
+
+    $("#modal").modal("show");
+    $(".modal-title").text("Update Status Order");
+    loadingModal();
+    $("#loadmodal").load(editUrl(code));
   });
 </script>
 @endpush

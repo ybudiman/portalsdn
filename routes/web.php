@@ -476,6 +476,14 @@ Route::middleware('auth')->group(function () {
         // List + filter
         Route::get('/',                 'index')->name('index')->can('orders.index');
 
+        // Inline update detail (AJAX) — untuk edit Deliver/Received Qty
+        Route::patch('/{order_code}/detail/{detail}', 'updateDetail')
+            ->where([
+                'order_code' => '[A-Za-z0-9\-]+', // sesuaikan pola order_code-mu
+                'detail'     => '[0-9]+',
+            ])
+            ->name('detail.update')->can('orders.edit');
+
         // Detail
         Route::get('/{order_code}',     'show')->name('show')->can('orders.index');
 
