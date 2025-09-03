@@ -247,9 +247,7 @@ class SalesOrderController extends Controller
     private function statusOptions(): array
     {
         return [
-            'Draft', 'Submitted', 'Approved', 'Rejected',
-            'Shipped', 'Delivered', 'Cancelled',
-            'Active', 'Inactive',
+            'Ordered', 'Delivered', 'Received', 'Completed', 'Cancelled',
         ];
     }
 
