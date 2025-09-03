@@ -80,8 +80,20 @@
                   <td>{{ $o->fullname }}</td>
                   <td>{{ $o->delivery_type }}</td>
                   <td>
-                    @php $ok = in_array($o->status, ['Approved','Delivered','Active','Submitted','Shipped']); @endphp
-                    <span class="badge {{ $ok ? 'bg-success' : 'bg-secondary' }}">{{ $o->status }}</span>
+                    @php
+                      $status = strtolower(trim($o->status));
+                      $badgeMap = [
+                        'ordered'   => 'bg-secondary',          // abu-abu
+                        'delivered' => 'bg-warning text-dark',  // kuning
+                        'received'  => 'bg-info',               // biru
+                        'completed' => 'bg-success',            // hijau
+                        'canceled'  => 'bg-danger',             // merah
+                        'cancelled' => 'bg-danger',             // (varian ejaan)
+                      ];
+                      $cls = $badgeMap[$status] ?? 'bg-secondary';
+                    @endphp
+
+                    <span class="badge {{ $cls }} text-capitalize">{{ $status }}</span>
                   </td>
                   <!-- <td>{{ $o->alamat }}</td> -->
                   <td class="text-center">
