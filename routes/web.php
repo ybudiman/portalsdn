@@ -37,6 +37,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\SalesOrderController;
+use App\Http\Controllers\SidiaCategories;
+use App\Http\Controllers\SidiaCategoryController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -495,6 +497,19 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{order_code}',  'destroy')->name('destroy')->can('orders.delete');
     });
 });
+
+Route::controller(SidiaCategoryController::class)->group(function () {
+        Route::get   ('/sidia/categories',            'index')->name('categories.index')->can('categories.index');
+        Route::get   ('/sidia/categories/create',     'create')->name('categories.create')->can('categories.create');
+        Route::post  ('/sidia/categories',            'store')->name('categories.store')->can('categories.create');
+        Route::get   ('/sidia/categories/{id}/edit',  'edit')->name('categories.edit')->can('categories.edit');
+        Route::put   ('/sidia/categories/{id}',       'update')->name('categories.update')->can('categories.edit');
+
+        // ⬇️ ini yang penting
+        Route::delete('/sidia/categories/{id}',       'destroy')->name('categories.destroy')->can('categories.delete');
+        // (opsional) alias lama agar tetap jalan:
+        Route::delete('/sidia/categories/{id}/delete','destroy')->name('categories.delete')->can('categories.delete');
+    });
 
 // Route::get('/debug/fileinfo', function () {
 //     return [
