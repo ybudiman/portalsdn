@@ -53,7 +53,7 @@
                                                 <div class="d-flex">
                                                     @can('categories.edit')
                                                         <div>
-                                                            <a href="#" class="me-2 btnEdit" brand_name="{{ Crypt::encrypt($d->category_name) }}">
+                                                            <a href="#" class="me-2 btnEdit" category_code="{{ Crypt::encrypt($d->category_code) }}">
                                                                 <i class="ti ti-edit text-success"></i>
                                                             </a>
                                                         </div>
@@ -115,10 +115,10 @@
 
         $(".btnEdit").click(function() {
             loading();
-            const brand_name = $(this).attr("brand_name");
+            const category_code = $(this).attr("category_code");
             $("#modal").modal("show");
-            $(".modal-title").text("Edit Data Brand");
-            $("#loadmodal").load(`/sobat/brand/${brand_name}/edit`);
+            $(".modal-title").text("Edit Data Kategori");
+            $("#loadmodal").load(`/sidia/categories/${category_code}/edit`);
         });
 
         $(document).on('click', '.delete-confirm', function (e) {
