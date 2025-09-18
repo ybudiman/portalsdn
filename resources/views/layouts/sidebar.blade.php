@@ -195,9 +195,9 @@
                              </a>
                          </li>
                      @endcan
-                     @can('bpjstenagakerja.index')
-                         <li class="menu-item {{ request()->is(['bpjstenagakerja', 'bpjstenagakerja/*']) ? 'active' : '' }}">
-                             <a href="{{ route('bpjstenagakerja.index') }}" class="menu-link">
+                     @can('customer.index')
+                         <li class="menu-item {{ request()->is(['customer', 'customer/*']) ? 'active' : '' }}">
+                             <a href="{{ route('customer.index') }}" class="menu-link">
                                  <div>Pelanggan</div>
                              </a>
                          </li>

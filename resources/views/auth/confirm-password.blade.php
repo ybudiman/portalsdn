@@ -7,7 +7,6 @@
         @csrf
 
         <!-- Password -->
-         <!-- test github -->
         <div>
             <x-input-label for="password" :value="__('Password')" />
 

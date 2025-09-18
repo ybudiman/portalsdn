@@ -36,6 +36,7 @@ use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SidiaCategories;
 use App\Http\Controllers\SidiaCategoryController;
@@ -458,45 +459,60 @@ Route::middleware('auth')->group(function () {
     //     Route::put('/sobat/brand/{id}', 'update')->name('brand.update')->can('brand.edit');
     //     Route::delete('/sobat/brand/{id}/delete', 'destroy')->name('brand.delete')->can('brand.delete');
     // });
-    Route::controller(BrandController::class)->group(function () {
-        Route::get   ('/sobat/brand',            'index')->name('brand.index')->can('brand.index');
-        Route::get   ('/sobat/brand/create',     'create')->name('brand.create')->can('brand.create');
-        Route::post  ('/sobat/brand',            'store')->name('brand.store')->can('brand.create');
-        Route::get   ('/sobat/brand/{id}/edit',  'edit')->name('brand.edit')->can('brand.edit');
-        Route::put   ('/sobat/brand/{id}',       'update')->name('brand.update')->can('brand.edit');
+    Route::prefix('sobat')->group(function () {
+        // ---------- Customer ----------
+        Route::controller(CustomerController::class)->group(function () {
+            Route::get('/customer', 'index')->name('customer.index')->can('customer.index');
+            Route::get('/customer/{id}/edit', 'edit')->name('customer.edit')->can('customer.edit');
+            Route::put('/customer/{id}', 'update')->name('customer.update')->can('customer.edit');
+            Route::get('/customer/{id}', 'show')->name('customer.show')->can('customer.show');
 
-        // ⬇️ ini yang penting
-        Route::delete('/sobat/brand/{id}',       'destroy')->name('brand.destroy')->can('brand.delete');
-        // (opsional) alias lama agar tetap jalan:
-        Route::delete('/sobat/brand/{id}/delete','destroy')->name('brand.delete')->can('brand.delete');
+            Route::get('/customer/ktp', 'index')->name('customer.ktp.index')->can('customer.ktp.index');
+            Route::get('/customer/domisili', 'index')->name('customer.domisili.index')->can('customer.domisili.index');
+        });
+
+        // ---------- Brand ----------
+        Route::controller(BrandController::class)->group(function () {
+            Route::get   ('/brand',            'index')->name('brand.index')->can('brand.index');
+            Route::get   ('/brand/create',     'create')->name('brand.create')->can('brand.create');
+            Route::post  ('/brand',            'store')->name('brand.store')->can('brand.create');
+            Route::get   ('/brand/{id}/edit',  'edit')->name('brand.edit')->can('brand.edit');
+            Route::put   ('/brand/{id}',       'update')->name('brand.update')->can('brand.edit');
+
+            Route::delete('/brand/{id}',       'destroy')->name('brand.destroy')->can('brand.delete');
+            Route::delete('/brand/{id}/delete','destroy')->name('brand.delete')->can('brand.delete');
+        });
+
+        // ---------- Orders ----------
+        Route::controller(SalesOrderController::class)
+            ->prefix('orders')
+            ->name('orders.')
+            ->group(function () {
+                // List + filter
+                Route::get('/', 'index')->name('index')->can('orders.index');
+
+                // Inline update detail (AJAX)
+                Route::patch('/{order_code}/detail/{detail}', 'updateDetail')
+                    ->where([
+                        'order_code' => '[A-Za-z0-9\-]+',
+                        'detail'     => '[0-9]+',
+                    ])
+                    ->name('detail.update')->can('orders.edit');
+
+                // Detail
+                Route::get('/{order_code}', 'show')->name('show')->can('orders.index');
+
+                // Edit / Update
+                Route::get('/{order_code}/edit', 'edit')->name('edit')->can('orders.edit');
+                Route::put('/{order_code}', 'update')->name('update')->can('orders.edit');
+
+                // Delete
+                Route::delete('/{order_code}', 'destroy')->name('destroy')->can('orders.delete');
+            });
+        });
     });
 
-    Route::controller(SalesOrderController::class)
-    ->prefix('sobat/orders')     // URL: /sobat/orders/...
-    ->name('orders.')            // route name: orders.*
-    ->group(function () {
-        // List + filter
-        Route::get('/',                 'index')->name('index')->can('orders.index');
 
-        // Inline update detail (AJAX) — untuk edit Deliver/Received Qty
-        Route::patch('/{order_code}/detail/{detail}', 'updateDetail')
-            ->where([
-                'order_code' => '[A-Za-z0-9\-]+', // sesuaikan pola order_code-mu
-                'detail'     => '[0-9]+',
-            ])
-            ->name('detail.update')->can('orders.edit');
-
-        // Detail
-        Route::get('/{order_code}',     'show')->name('show')->can('orders.index');
-
-        // Edit / Update (opsional, kalau dipakai)
-        Route::get('/{order_code}/edit','edit')->name('edit')->can('orders.edit');
-        Route::put('/{order_code}',     'update')->name('update')->can('orders.edit');
-
-        // Delete
-        Route::delete('/{order_code}',  'destroy')->name('destroy')->can('orders.delete');
-    });
-});
 
 Route::controller(SidiaCategoryController::class)->group(function () {
         Route::get   ('/sidia/categories',            'index')->name('categories.index')->can('categories.index');
