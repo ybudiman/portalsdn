@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BusinessArea;
 use App\Models\SobatCustomer;
+use App\Models\SobatCustomerKTP;
+use App\Models\SobatCustomerDomicile;
 use Illuminate\Http\Request;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Crypt;
@@ -138,70 +140,18 @@ class CustomerController extends Controller
     {
         $id = Crypt::decrypt($id);
         $customer = SobatCustomer::findOrFail($id);
-        // $karyawan = SobatCustomer::where('id', $id)
-        //     ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
-        //     ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-        //     ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
-        //     ->join('status_kawin', 'karyawan.kode_status_kawin', '=', 'status_kawin.kode_status_kawin')
-        //     ->leftJoin('karyawan as atasan', 'karyawan.nik_atasan', '=', 'atasan.nik')
-        //     ->select(
-        //         'karyawan.*',
-        //         'cabang.nama_cabang',
-        //         'departemen.nama_dept',
-        //         'jabatan.nama_jabatan',
-        //         'status_kawin.status_kawin',
-        //         'atasan.nama_karyawan as nama_atasan'
-        //     )
 
-        //     ->first();
-        // $user_karyawan = Userkaryawan::where('nik', $nik)->first();
-        // $user = $user_karyawan ? User::where('id', $user_karyawan->id_user)->first() : null;
-        // $data['karyawan'] = $karyawan;
-        // $data['user'] = $user;
-        return view('sobat.customer.show', compact('customer'));
+        // Get KTP imagePath
+        $ktpImage = SobatCustomerKTP::where('user_id', $id)->where('status', 'Active')->value('ktp_image');
+        
+        // Get Domicile imagePath
+        $domicileImage = SobatCustomerDomicile::where('user_id', $id)->where('status', 'Active')->value('image_rumah');
+
+        return view('sobat.customer.show', compact('customer', 'ktpImage', 'domicileImage'));
     }
 
 
     // ----- UTIL -----
-    private function uploadToSobat($file, string $customerName, bool $overwrite = true): ?string
-    {
-        $uploadUrl = config('services.sobat.upload_url')   ?: env('SOBAT_UPLOAD_URL');
-        $token     = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
-
-        Log::info('SOBAT upload config', ['url' => $uploadUrl, 'has_token' => !empty($token)]);
-
-        if (empty($uploadUrl) || empty($token)) {
-            Log::error('SOBAT upload config is empty');
-            return null;
-        }
-
-        try {
-            $resp = Http::withToken($token)
-                ->timeout(30)
-                // ->withOptions(['verify' => false]) // aktifkan hanya bila perlu debug SSL
-                ->attach('file', fopen($file->getRealPath(), 'r'), $file->getClientOriginalName())
-                ->post($uploadUrl, [
-                    'fullname' => $customerName,            // nama file dibentuk dari fullname
-                    'overwrite'  => $overwrite ? '1' : '0',
-                ]);
-
-            Log::info('Upload response', ['status' => $resp->status(), 'body' => $resp->body()]);
-
-            if (!$resp->successful()) {
-                return null;
-            }
-
-            $payload = $resp->json();
-            return $payload['filename'] ?? null;
-        } catch (ConnectionException $e) {
-            Log::error('Upload connection error', ['message' => $e->getMessage()]);
-            return null;
-        } catch (\Throwable $e) {
-            Log::error('Upload unexpected error', ['message' => $e->getMessage()]);
-            return null;
-        }
-    }
-
     private function normalizeStatus($v): string
     {
         $v = strtolower(trim((string)$v));
@@ -217,69 +167,7 @@ class CustomerController extends Controller
             return back()->with('error', 'Data customer tidak ditemukan.');
         }
 
-        // simpan dulu filename untuk hapus remote
-        $filename = trim((string)($customer->customer_image ?? ''));
-
-        // 1) Hapus record DB
         $customer->delete();
-
-        // 2) Hapus file di server upload (opsional; tidak menghalangi sukses DB)
-        $remoteOk = true;
-        if ($filename !== '') {
-            $remoteOk = $this->deleteFromSobat($filename);
-        }
-
-        if ($remoteOk) {
-            return back()->with('success', 'customer & file gambar berhasil dihapus.');
-        }
         return back()->with('warning', 'customer terhapus, namun file gambar gagal dihapus dari server.');
-    }
-
-    /**
-     * Hapus file pada server upload Sobat.
-     * Terima filename atau full URL (akan diambil basename-nya).
-     */
-    private function deleteFromSobat(string $value): bool
-    {
-        $token = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
-        $url   = config('services.sobat.delete_url') ?: env('SOBAT_DELETE_URL');
-
-        if (empty($token) || empty($url)) {
-            Log::warning('SOBAT delete config empty', ['url'=>$url,'has_token'=>!empty($token)]);
-            return false;
-        }
-
-        // ekstrak filename jika yang dikirim URL penuh
-        $filename = $this->extractFilename($value);
-
-        try {
-            // Banyak server menolak body di DELETE → pakai POST sederhana
-            $resp = Http::withToken($token)->timeout(20)->post($url, [
-                'filename' => $filename,
-            ]);
-            Log::info('Delete response', ['status'=>$resp->status(), 'body'=>$resp->body()]);
-
-            if ($resp->successful()) {
-                return true;
-            }
-
-            // anggap sukses jika file tidak ada di server tujuan
-            if ($resp->status() === 200 && str_contains($resp->body(), 'not_found')) {
-                return true;
-            }
-        } catch (\Throwable $e) {
-            Log::error('Delete remote file error', ['msg'=>$e->getMessage()]);
-        }
-        return false;
-    }
-
-    private function extractFilename(string $v): string
-    {
-        $v = trim($v);
-        if (preg_match('~^https?://~i', $v)) {
-            $path = parse_url($v, PHP_URL_PATH) ?? '';
-            return basename($path);
-        }
-        return basename($v);
     }
 }

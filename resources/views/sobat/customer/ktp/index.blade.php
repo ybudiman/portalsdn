@@ -17,81 +17,62 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-12">
-                        <form action="{{ route('customer.index') }}">
-                            <div class="row">
-                                <div class="col-lg-4 col-sm-12 col-md-12">
-                                    <x-input-with-icon label="Cari Customer" value="{{ Request('search_query') }}" name="search_query"
-                                        icon="ti ti-search" />
-                                </div>
-                                <div class="col-lg-2 col-sm-12 col-md-12">
-                                    <button class="btn btn-primary"><i class="ti ti-icons ti-search me-1"></i>Cari</button>
-                                </div>
-                            </div>
-
-                        </form>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
 
                         <div class="table-responsive mb-2">
-                            <table class="table  table-hover table-bordered table-striped">
+                            <table class="table table-hover table-bordered table-striped">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>Customer ID</th>
-                                        <th>External Customer ID</th>
+                                        <th>User ID</th>
+                                        <th>Provinsi KTP</th>
+                                        <th>Kota KTP</th>
                                         <th>Nama</th>
-                                        <th>Email</th>
-                                        <th>No Hp</th>
-                                        <th>Verified</th>
-                                        <th>Employee ID</th>
-                                        <th>Delivery Type</th>
-                                        <th>Point</th>
-                                        <th>Business Area Code</th>
+                                        <th>NIK</th>
+                                        <th>TTL</th>
+                                        <th>Jenis Kelamin</th>
+                                        <th>Agama</th>
+                                        <th>Alamat</th>
+                                        <th>RT/RW</th>
+                                        <th>Kecamatan</th>
+                                        <th>Kelurahan</th>
+                                        <th>Status</th>
                                         <th>#</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($customers as $customer)
+                                    @foreach ($customerKTPs as $customerKTP)
                                         @php
-                                            $rowClass = match ($customer->verified) {
-                                                'Y' => 'table-success', // green
-                                                'W' => 'table-warning', // yellow
-                                                'N' => 'table-danger',  // red
-                                                'P' => 'table-info',    // blue
+                                            $rowClass = match ($customerKTP->status) {
+                                                'Active' => 'table-success', // green
+                                                'Inactive' => 'table-danger',  // red
                                                 default => '',
                                             };
                                         @endphp
                                         <tr class="{{ $rowClass }}">
-                                            <td>{{ $customer->customer_id }}</td>
-                                            <td>{{ $customer->external_customer_id }}</td>
-                                            <td>{{ $customer->fullname }}</td>
-                                            <td>{{ $customer->email }}</td>
-                                            <td>{{ $customer->phone_number }}</td>
-                                            <td>{{ $customer->verified }}</td>
-                                            <td>{{ $customer->employee_id }}</td>
-                                            <td>{{ $customer->default_delivery_type }}</td>
-                                            <td>{{ $customer->point }}</td>
-                                            <td>{{ $customer->business_area_code }}</td>
+                                            <td>{{ $customerKTP->user_id }}</td>
+                                            <td>{{ $customerKTP->provinsi_ktp }}</td>
+                                            <td>{{ $customerKTP->kota_ktp }}</td>
+                                            <td>{{ $customerKTP->nama }}</td>
+                                            <td>{{ $customerKTP->NIK }}</td>
+                                            <td>{{ $customerKTP->TTL }}</td>
+                                            <td>{{ $customerKTP->jenis_kelamin }}</td>
+                                            <td>{{ $customerKTP->agama }}</td>
+                                            <td>{{ $customerKTP->alamat }}</td>
+                                            <td>{{ $customerKTP->rt_rw }}</td>
+                                            <td>{{ $customerKTP->kecamatan }}</td>
+                                            <td>{{ $customerKTP->kelurahan }}</td>
+                                            <td>{{ $customerKTP->status }}</td>
                                             <td>
                                                 <div class="d-flex">
                                                     @can('customer.edit')
                                                         <div>
-                                                            <a href="#" class="me-2 btnEdit" customer_id="{{ Crypt::encrypt($customer->id) }}">
+                                                            <a href="#" class="me-2 btnEdit" customer_id="{{ Crypt::encrypt($customerKTP->user_id) }}" ktp_id = "{{ Crypt::encrypt($customerKTP->id) }}">
                                                                 <i class="ti ti-edit text-success"></i>
-                                                            </a>
-                                                        </div>
-                                                    @endcan
-                                                    @can('customer.show')
-                                                        <div>
-                                                            <a href="{{ route('customer.show', Crypt::encrypt($customer->id)) }}" class="me-2">
-                                                                <i class="ti ti-file-description text-info"></i>
                                                             </a>
                                                         </div>
                                                     @endcan
                                                     @can('customer.delete')
                                                         <div>
-                                                            <form method="POST" action="{{ route('customer.destroy', $customer->id) }}" class="deleteform d-inline">
+                                                            <form method="POST" action="{{ route('customer.ktp.destroy', $customerKTP->id) }}" class="deleteform d-inline">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="button" class="btn btn-link p-0 delete-confirm" title="Delete">
@@ -105,10 +86,12 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
+
+
                             </table>
                         </div>
                         <div style="float: right;">
-                            {{ $customers->links() }}
+                            {{ $customerKTPs->links() }}
                         </div>
                     </div>
                 </div>
@@ -135,9 +118,10 @@
         $(".btnEdit").click(function() {
             loading();
             const id = $(this).attr("customer_id");
+            const ktpId = $(this).attr("ktp_id");
             $("#modal").modal("show");
-            $(".modal-title").text("Edit Data Customer");
-            $("#loadmodal").load(`/sobat/customer/${id}/edit`);
+            $(".modal-title").text("Edit Data KTP Customer");
+            $("#loadmodal").load(`/sobat/customer/${id}/ktp/${ktpId}/edit`);
         });
 
         $(document).on('click', '.delete-confirm', function (e) {
@@ -145,7 +129,7 @@
         const form = $(this).closest('form');
 
         Swal.fire({
-            title: 'Hapus customer ini?',
+            title: 'Hapus customerKTP ini?',
             text: 'Tindakan ini tidak bisa dibatalkan.',
             icon: 'warning',
             showCancelButton: true,

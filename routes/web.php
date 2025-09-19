@@ -37,6 +37,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerDomisiliController;
+use App\Http\Controllers\CustomerKTPController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SidiaCategories;
 use App\Http\Controllers\SidiaCategoryController;
@@ -466,10 +468,24 @@ Route::middleware('auth')->group(function () {
             Route::get('/customer/{id}/edit', 'edit')->name('customer.edit')->can('customer.edit');
             Route::put('/customer/{id}', 'update')->name('customer.update')->can('customer.edit');
             Route::get('/customer/{id}', 'show')->name('customer.show')->can('customer.show');
-
-            Route::get('/customer/ktp', 'index')->name('customer.ktp.index')->can('customer.ktp.index');
-            Route::get('/customer/domisili', 'index')->name('customer.domisili.index')->can('customer.domisili.index');
         });
+
+        // ---------- Customer KTP ----------
+        Route::controller(CustomerKTPController::class)->group(function () {
+            Route::get('/customer/{id}/ktp', 'index')->name('customer.ktp.index')->can('customer.index');  
+            Route::get('/customer/{id}/ktp/{ktpId}/edit', 'edit')->name('customer.ktp.edit')->can('customer.edit');  
+            Route::put('/customer/{id}/ktp/{ktpId}', 'update')->name('customer.ktp.update')->can('customer.edit');  
+            Route::get('/customer/{id}/ktp/{ktpId}', 'show')->name('customer.ktp.show')->can('customer.show');  
+        });
+
+        // ---------- Customer Domisili ----------
+        Route::controller(CustomerDomisiliController::class)->group(function () {
+            Route::get('/customer/{id}/domisili', 'index')->name('customer.domisili.index')->can('customer.index');  
+            Route::get('/customer/{id}/domisili/{domisiliId}/edit', 'edit')->name('customer.domisili.edit')->can('customer.edit');  
+            Route::put('/customer/{id}/domisili/{domisiliId}', 'update')->name('customer.domisili.update')->can('customer.edit');  
+            Route::get('/customer/{id}/domisili/{domisiliId}', 'show')->name('customer.domisili.show')->can('customer.show');  
+        });
+
 
         // ---------- Brand ----------
         Route::controller(BrandController::class)->group(function () {
