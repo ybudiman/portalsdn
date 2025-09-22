@@ -141,11 +141,47 @@ class CustomerController extends Controller
         $id = Crypt::decrypt($id);
         $customer = SobatCustomer::findOrFail($id);
 
-        // Get KTP imagePath
-        $ktpImage = SobatCustomerKTP::where('user_id', $id)->where('status', 'Active')->value('ktp_image');
-        
-        // Get Domicile imagePath
-        $domicileImage = SobatCustomerDomicile::where('user_id', $id)->where('status', 'Active')->value('image_rumah');
+        // Get KTP image filename from DB
+        $ktpFile = SobatCustomerKTP::where('user_id', $id)
+            ->where('status', 'Active')
+            ->value('ktp_image');
+
+        $ktpImage = null;
+        if ($ktpFile) {
+            $baseUrl = rtrim(env('SOBAT_USER_DOCUMENT_IMAGE_BASE_URL'), '/');
+
+            // Example: SB-000123_KTP.jpeg
+            $fileParts = explode('.', $ktpFile);
+            $filenameWithoutExt = $fileParts[0]; // SB-000123_KTP
+            $extension = $fileParts[1];         // jpeg
+
+            // Extract user folder => part before "_KTP"
+            $userFolder = explode('_', $filenameWithoutExt)[0]; // SB-000123
+
+            // Build final URL
+            $ktpImage = "{$baseUrl}/{$userFolder}/{$filenameWithoutExt}.{$extension}";
+        }
+
+        // Get Domicile image filename from DB
+        $domicileFile = SobatCustomerDomicile::where('user_id', $id)
+            ->where('status', 'Active')
+            ->value('image_rumah');
+
+        $domicileImage = null;
+        if ($domicileFile) {
+            $baseUrl = rtrim(env('SOBAT_USER_DOCUMENT_IMAGE_BASE_URL'), '/');
+
+            // Example: SB-000123_house.jpeg
+            $fileParts = explode('.', $domicileFile);
+            $filenameWithoutExt = $fileParts[0]; // SB-000123_house
+            $extension = $fileParts[1];          // jpeg
+
+            // Extract user folder => part before "_house"
+            $userFolder = explode('_', $filenameWithoutExt)[0]; // SB-000123
+
+            // Build final URL
+            $domicileImage = "{$baseUrl}/{$userFolder}/{$filenameWithoutExt}.{$extension}";
+        }
 
         return view('sobat.customer.show', compact('customer', 'ktpImage', 'domicileImage'));
     }

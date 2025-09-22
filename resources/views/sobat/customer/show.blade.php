@@ -166,15 +166,19 @@
                             <div class="col-md-6 text-center">
                                 <h6 class="mb-2">KTP</h6>
                                 @if(!empty($ktpImage))
-                                    <img src="{{ $ktpImage }}" 
-                                        alt="KTP Image" 
-                                        class="img-fluid rounded border shadow-sm"
-                                        style="max-height: 300px; object-fit: contain;">
+                                    <a href="{{ $ktpImage }}" target="_blank">
+                                        <div style="width: 300px; height: 300px; margin: 0 auto; overflow: hidden; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                                            <img src="{{ $ktpImage }}" 
+                                                alt="KTP Image" 
+                                                style="width: 100%; height: 100%; object-fit: cover;">
+                                        </div>
+                                    </a>
                                 @else
-                                    <img src="{{ asset('assets/img/avatars/No_Image_Available.jpg') }}" 
-                                        alt="No KTP Available" 
-                                        class="img-fluid rounded border shadow-sm"
-                                        style="max-height: 300px; object-fit: contain;">
+                                    <div style="width: 300px; height: 300px; margin: 0 auto; overflow: hidden; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                                        <img src="{{ asset('assets/img/avatars/No_Image_Available.jpg') }}" 
+                                            alt="No KTP Available" 
+                                            style="width: 100%; height: 100%; object-fit: cover;">
+                                    </div>
                                 @endif
                             </div>
 
@@ -182,15 +186,19 @@
                             <div class="col-md-6 text-center">
                                 <h6 class="mb-2">Domisili</h6>
                                 @if(!empty($domicileImage))
-                                    <img src="{{ $domicileImage }}" 
-                                        alt="Domicile Image" 
-                                        class="img-fluid rounded border shadow-sm"
-                                        style="max-height: 300px; object-fit: contain;">
+                                    <a href="{{ $domicileImage }}" target="_blank">
+                                        <div style="width: 300px; height: 300px; margin: 0 auto; overflow: hidden; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                                            <img src="{{ $domicileImage }}" 
+                                                alt="Domicile Image" 
+                                                style="width: 100%; height: 100%; object-fit: cover;">
+                                        </div>
+                                    </a>
                                 @else
-                                    <img src="{{ asset('assets/img/avatars/No_Image_Available.jpg') }}" 
-                                        alt="No Domicile Available" 
-                                        class="img-fluid rounded border shadow-sm"
-                                        style="max-height: 300px; object-fit: contain;">
+                                    <div style="width: 300px; height: 300px; margin: 0 auto; overflow: hidden; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+                                        <img src="{{ asset('assets/img/avatars/No_Image_Available.jpg') }}" 
+                                            alt="No Domicile Available" 
+                                            style="width: 100%; height: 100%; object-fit: cover;">
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -198,9 +206,6 @@
                 </div>
             </div>
         </div>
-
-
-        <!--/ Activity Timeline -->
     </div>
 </div>
 <x-modal-form id="modal" show="loadmodal" size="modal-lg" />
