@@ -131,7 +131,7 @@ class CustomerKTPController extends Controller
             'nama'          => 'required|string|max:255',
             'NIK'           => 'required|string|max:20|unique:mysqlsobat.user_ktp,NIK,' . $customerKTP->id,
             'TTL'           => 'required|string|max:100',
-            'jenis_kelamin' => 'required|in:L,P',
+            'jenis_kelamin' => 'required|String|in:Perempuan,Laki-laki',
             'agama'         => 'nullable|string|max:50',
             'alamat'        => 'required|string|max:500',
             'rt_rw'         => 'nullable|string|max:20',

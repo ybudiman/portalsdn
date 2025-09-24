@@ -49,8 +49,8 @@
       <div class="form-group mb-3">
          <label class="form-label">Jenis Kelamin</label>
          <select name="jenis_kelamin" class="form-select">
-            <option value="L" {{ old('jenis_kelamin', $customerKTP->jenis_kelamin) === 'L' ? 'selected' : '' }}>Laki-Laki</option>
-            <option value="P" {{ old('jenis_kelamin', $customerKTP->jenis_kelamin) === 'P' ? 'selected' : '' }}>Perempuan</option>
+            <option value="Laki-laki" {{ old('jenis_kelamin', $customerKTP->jenis_kelamin) === 'Laki-laki' ? 'selected' : '' }}>Laki-Laki</option>
+            <option value="Perempuan" {{ old('jenis_kelamin', $customerKTP->jenis_kelamin) === 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
          </select>
          @error('jenis_kelamin')
             <div class="text-danger small mt-1">{{ $message }}</div>
