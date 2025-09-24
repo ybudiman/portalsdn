@@ -5,26 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SobatCustomerDomicile extends Model
+class Kota extends Model
 {
     use HasFactory;
 
     protected $connection = 'mysqlsobat';
-    protected $table = 'domisili';
+    protected $table = 'kota';
 
     protected $fillable = [
-        'alamat',
         'kode_provinsi',
         'kode_kota',
-        'kode_kecamatan',
-        'kode_kelurahan',
-        'kode_pos',
-        'longitude',
-        'langitude',
-        'status',
-        'image_rumah',
-        'updated_at',
-        'updated_by'
+        'nama_kota'
     ];
 
     public $timestamps = true;

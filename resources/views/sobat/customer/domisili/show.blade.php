@@ -198,8 +198,6 @@
                 </div>
             </div>
         </div>
-
-
         <!--/ Activity Timeline -->
     </div>
 </div>

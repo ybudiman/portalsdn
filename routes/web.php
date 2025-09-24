@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\BpjskesehatanController;
 use App\Http\Controllers\BpjstenagakerjaController;
 use App\Http\Controllers\CabangController;
@@ -528,6 +529,9 @@ Route::middleware('auth')->group(function () {
         });
     });
 
+Route::get('/area/kota/{provinsiCode}', [AreaController::class, 'getKota']);
+Route::get('/area/kecamatan/{kotaCode}', [AreaController::class, 'getKecamatan']);
+Route::get('/area/kelurahan/{kecamatanCode}', [AreaController::class, 'getKelurahan']);
 
 
 Route::controller(SidiaCategoryController::class)->group(function () {

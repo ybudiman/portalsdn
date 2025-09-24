@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessArea;
+use App\Models\Provinsi;
 use App\Models\SobatCustomerKTP;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
@@ -17,18 +18,18 @@ class CustomerKTPController extends Controller
     {
         $userId = Crypt::decrypt($id);
         $query = SobatCustomerKTP::query()
-            ->where('user_id','=', $userId);
-            // ->leftJoin('provinsi', 'user_ktp.kode_provinsi_ktp', '=', 'provinsi.kode_provinsi')
-            // ->leftJoin('kota', 'user_ktp.kode_kota_ktp', '=', 'kota.kode_kota')
-            // ->leftJoin('kecamatan', 'user_ktp.kode_kecamatan', '=', 'kecamatan.kode_kecamatan')
-            // ->leftJoin('kelurahan', 'user_ktp.kode_kelurahan', '=', 'kelurahan.kode_kelurahan')
-            // ->select(
-            //     'user_ktp.*',
-                // 'provinsi.nama_provinsi AS provinsi_ktp',
-                // 'kota.nama_kota AS kota_ktp',
-                // 'kecamatan.nama_kecamatan AS kecamatan',
-                // 'kelurahan.nama_kelurahan AS kelurahan',
-            // );
+            ->where('user_id','=', $userId)
+            ->leftJoin('provinsi', 'user_ktp.kode_provinsi_ktp', '=', 'provinsi.kode_provinsi')
+            ->leftJoin('kota', 'user_ktp.kode_kota_ktp', '=', 'kota.kode_kota')
+            ->leftJoin('kecamatan', 'user_ktp.kode_kecamatan', '=', 'kecamatan.kode_kecamatan')
+            ->leftJoin('kelurahan', 'user_ktp.kode_kelurahan', '=', 'kelurahan.kode_kelurahan')
+            ->select(
+                'user_ktp.*',
+                'provinsi.nama_provinsi AS nama_provinsi',
+                'kota.nama_kota AS nama_kota',
+                'kecamatan.nama_kecamatan AS nama_kecamatan',
+                'kelurahan.nama_kelurahan AS nama_kelurahan',
+            );
 
         if ($request->filled('search_query')) {
             $query->where('user_id', $request->search_query)
@@ -48,7 +49,28 @@ class CustomerKTPController extends Controller
         $customerKTPs = $query->orderBy('nama')->paginate(10);
         $customerKTPs->appends($request->all());
 
-        return view('sobat.customer.ktp.index', compact('customerKTPs'));
+        // 🔹 Get Active KTP filename
+        $activeKTPFile = SobatCustomerKTP::where('user_id', $userId)
+            ->where('status', 'Active')
+            ->value('ktp_image');
+
+        $activeKTPImage = null;
+        if ($activeKTPFile) {
+            $baseUrl = rtrim(env('SOBAT_USER_DOCUMENT_IMAGE_BASE_URL'), '/');
+
+            // Example: SB-000123_KTP.jpeg
+            $fileParts = explode('.', $activeKTPFile);
+            $filenameWithoutExt = $fileParts[0]; // SB-000123_KTP
+            $extension = $fileParts[1] ?? '';    // jpeg
+
+            // Extract user folder (SB-000123)
+            $userFolder = explode('_', $filenameWithoutExt)[0];
+
+            // Build full image URL
+            $activeKTPImage = "{$baseUrl}/{$userFolder}/{$filenameWithoutExt}.{$extension}";
+        }
+        
+        return view('sobat.customer.ktp.index', compact('customerKTPs', 'activeKTPImage'));
     }
 
     // ----- CREATE -----
@@ -89,68 +111,59 @@ class CustomerKTPController extends Controller
     }
 
     // ----- EDIT -----
-    // Tetap pakai fullname terenkripsi (kompatibel dengan route kamu saat ini)
     public function edit($id, $ktpId)
     {
         $ktpId = Crypt::decrypt($ktpId);
         $customerKTP = SobatCustomerKTP::findOrFail($ktpId);
 
+        $provinsi = Provinsi::select('nama_provinsi', 'kode_provinsi')->orderBy('nama_provinsi')->get();
 
-        $businessAreas = BusinessArea::select('business_area_code', 'business_area_name')
-            ->orderBy('business_area_code')
-            ->get();
+        $businessAreas = BusinessArea::select('business_area_code', 'business_area_name')->orderBy('business_area_code')->get();
 
-        return view('sobat.customer.ktp.edit', compact('customerKTP', 'businessAreas'));
+        return view('sobat.customer.ktp.edit', compact('customerKTP', 'businessAreas', 'provinsi'));
     }
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, $ktpId)
     {
-        $id = Crypt::decrypt($id);
-        $customer = SobatCustomerKTP::findOrFail($id);
+        $ktpId = Crypt::decrypt($ktpId);
+        $customerKTP = SobatCustomerKTP::findOrFail($ktpId);
 
         $request->validate([
-            'fullname' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('mysqlsobat.users', 'fullname')->ignore($customer->id),
-            ],
-            'verified' => [
-                'required',
-                Rule::in(['Y', 'W', 'N', 'P']),
-            ],
-            'employee_id' => [
-                'nullable',
-                'string',
-                'max:50',
-            ],
-            'external_customer_id' => [
-                'nullable',
-                'string',
-                'max:100',
-                Rule::unique('mysqlsobat.users', 'external_customer_id')->ignore($customer->id),
-            ],
-            'default_delivery_type' => [
-                'required',
-                Rule::in(['Franco', 'Loco']),
-            ],
-            'business_area_code' => [
-                'required',
-                'string',
-                Rule::exists('mysqlsobat.business_area', 'business_area_code'),
-            ],
+            'nama'          => 'required|string|max:255',
+            'NIK'           => 'required|string|max:20|unique:mysqlsobat.user_ktp,NIK,' . $customerKTP->id,
+            'TTL'           => 'required|string|max:100',
+            'jenis_kelamin' => 'required|in:L,P',
+            'agama'         => 'nullable|string|max:50',
+            'alamat'        => 'required|string|max:500',
+            'rt_rw'         => 'nullable|string|max:20',
+
+            'provinsi_ktp'  => 'required|string|exists:mysqlsobat.provinsi,kode_provinsi',
+            'kota_ktp'      => 'required|string|exists:mysqlsobat.kota,kode_kota',
+            'kecamatan'     => 'required|string|exists:mysqlsobat.kecamatan,kode_kecamatan',
+            'kelurahan'     => 'required|string|exists:mysqlsobat.kelurahan,kode_kelurahan',
+
+            'status'        => 'required|in:Active,Inactive',
         ]);
 
-        // Mass assign safely
-        $customer->update([
-            'fullname'             => $request->fullname,
-            'verified'             => $request->verified,
-            'employee_id'          => $request->employee_id,
-            'external_customer_id' => $request->external_customer_id,
-            'default_delivery_type'=> $request->default_delivery_type,
-            'business_area_code'   => $request->business_area_code,
+        $customerKTP->update([
+            'nama'          => $request->nama,
+            'NIK'           => $request->NIK,
+            'TTL'           => $request->TTL,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'agama'         => $request->agama,
+            'alamat'        => $request->alamat,
+            'rt_rw'         => $request->rt_rw,
+
+            'kode_provinsi_ktp'  => $request->provinsi_ktp,
+            'kode_kota_ktp'      => $request->kota_ktp,
+            'kode_kecamatan'=> $request->kecamatan,
+            'kode_kelurahan'=> $request->kelurahan,
+
+            'status'        => $request->status,
         ]);
 
-        return redirect()->route('customer.index')->with('success', 'Customer berhasil diupdate.');
+        return redirect()
+            ->route('customer.ktp.index', $id) // only customerId
+            ->with('success', 'Customer KTP berhasil diupdate.');
     }
 
     public function show($id)
@@ -158,127 +171,5 @@ class CustomerKTPController extends Controller
         $id = Crypt::decrypt($id);
         $customer = SobatCustomerKTP::findOrFail($id);
         return view('sobat.customer.show', compact('customer'));
-    }
-
-
-    // ----- UTIL -----
-    private function uploadToSobat($file, string $customerName, bool $overwrite = true): ?string
-    {
-        $uploadUrl = config('services.sobat.upload_url')   ?: env('SOBAT_UPLOAD_URL');
-        $token     = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
-
-        Log::info('SOBAT upload config', ['url' => $uploadUrl, 'has_token' => !empty($token)]);
-
-        if (empty($uploadUrl) || empty($token)) {
-            Log::error('SOBAT upload config is empty');
-            return null;
-        }
-
-        try {
-            $resp = Http::withToken($token)
-                ->timeout(30)
-                // ->withOptions(['verify' => false]) // aktifkan hanya bila perlu debug SSL
-                ->attach('file', fopen($file->getRealPath(), 'r'), $file->getClientOriginalName())
-                ->post($uploadUrl, [
-                    'fullname' => $customerName,            // nama file dibentuk dari fullname
-                    'overwrite'  => $overwrite ? '1' : '0',
-                ]);
-
-            Log::info('Upload response', ['status' => $resp->status(), 'body' => $resp->body()]);
-
-            if (!$resp->successful()) {
-                return null;
-            }
-
-            $payload = $resp->json();
-            return $payload['filename'] ?? null;
-        } catch (ConnectionException $e) {
-            Log::error('Upload connection error', ['message' => $e->getMessage()]);
-            return null;
-        } catch (\Throwable $e) {
-            Log::error('Upload unexpected error', ['message' => $e->getMessage()]);
-            return null;
-        }
-    }
-
-    private function normalizeStatus($v): string
-    {
-        $v = strtolower(trim((string)$v));
-        if (in_array($v, ['active','aktif','1','y','true','yes'], true))     return 'Active';
-        if (in_array($v, ['inactive','nonaktif','0','n','false','no'], true)) return 'Inactive';
-        return 'Active';
-    }
-
-    public function destroy($id)
-    {
-        $customer = SobatCustomerKTP::find($id);
-        if (!$customer) {
-            return back()->with('error', 'Data customer tidak ditemukan.');
-        }
-
-        // simpan dulu filename untuk hapus remote
-        $filename = trim((string)($customer->customer_image ?? ''));
-
-        // 1) Hapus record DB
-        $customer->delete();
-
-        // 2) Hapus file di server upload (opsional; tidak menghalangi sukses DB)
-        $remoteOk = true;
-        if ($filename !== '') {
-            $remoteOk = $this->deleteFromSobat($filename);
-        }
-
-        if ($remoteOk) {
-            return back()->with('success', 'customer & file gambar berhasil dihapus.');
-        }
-        return back()->with('warning', 'customer terhapus, namun file gambar gagal dihapus dari server.');
-    }
-
-    /**
-     * Hapus file pada server upload Sobat.
-     * Terima filename atau full URL (akan diambil basename-nya).
-     */
-    private function deleteFromSobat(string $value): bool
-    {
-        $token = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
-        $url   = config('services.sobat.delete_url') ?: env('SOBAT_DELETE_URL');
-
-        if (empty($token) || empty($url)) {
-            Log::warning('SOBAT delete config empty', ['url'=>$url,'has_token'=>!empty($token)]);
-            return false;
-        }
-
-        // ekstrak filename jika yang dikirim URL penuh
-        $filename = $this->extractFilename($value);
-
-        try {
-            // Banyak server menolak body di DELETE → pakai POST sederhana
-            $resp = Http::withToken($token)->timeout(20)->post($url, [
-                'filename' => $filename,
-            ]);
-            Log::info('Delete response', ['status'=>$resp->status(), 'body'=>$resp->body()]);
-
-            if ($resp->successful()) {
-                return true;
-            }
-
-            // anggap sukses jika file tidak ada di server tujuan
-            if ($resp->status() === 200 && str_contains($resp->body(), 'not_found')) {
-                return true;
-            }
-        } catch (\Throwable $e) {
-            Log::error('Delete remote file error', ['msg'=>$e->getMessage()]);
-        }
-        return false;
-    }
-
-    private function extractFilename(string $v): string
-    {
-        $v = trim($v);
-        if (preg_match('~^https?://~i', $v)) {
-            $path = parse_url($v, PHP_URL_PATH) ?? '';
-            return basename($path);
-        }
-        return basename($v);
     }
 }
