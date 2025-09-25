@@ -4,16 +4,16 @@
 
    {{-- Fullname --}}
    <div class="form-group mb-3">
-      <label class="form-label">Nama Customer</label>
-      <x-input-with-icon 
-         label="Nama Customer" 
-         name="fullname" 
-         icon="ti ti-user" 
-         value="{{ old('fullname', $customer->fullname) }}" 
-         required />
-      @error('fullname')
-         <div class="text-danger small mt-1">{{ $message }}</div>
-      @enderror
+   <label class="form-label">Nama Customer</label>
+   <input 
+      type="text" 
+      name="fullname" 
+      class="form-control" 
+      value="{{ old('fullname', $customer->fullname) }}" 
+      disabled>
+   @error('fullname')
+      <div class="text-danger small mt-1">{{ $message }}</div>
+   @enderror
    </div>
 
    {{-- Verified --}}
@@ -61,8 +61,8 @@
    <div class="form-group mb-3">
       <label class="form-label">Default Delivery Type</label>
       <select name="default_delivery_type" class="form-select">
-         <option value="Franco" {{ old('default_delivery_type', $customer->default_delivery_type) === 'Franco' ? 'selected' : '' }}>Franco</option>
-         <option value="Loco"   {{ old('default_delivery_type', $customer->default_delivery_type) === 'Loco'   ? 'selected' : '' }}>Loco</option>
+         <option value="franco" {{ old('default_delivery_type', $customer->default_delivery_type) === 'franco' ? 'selected' : '' }}>Franco</option>
+         <option value="loco"   {{ old('default_delivery_type', $customer->default_delivery_type) === 'loco'   ? 'selected' : '' }}>Loco</option>
       </select>
       @error('default_delivery_type')
          <div class="text-danger small mt-1">{{ $message }}</div>

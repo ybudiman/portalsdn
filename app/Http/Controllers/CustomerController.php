@@ -91,12 +91,6 @@ class CustomerController extends Controller
         $customer = SobatCustomer::findOrFail($id);
 
         $request->validate([
-            'fullname' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('mysqlsobat.users', 'fullname')->ignore($customer->id),
-            ],
             'verified' => [
                 'required',
                 Rule::in(['Y', 'W', 'N', 'P']),
@@ -114,7 +108,7 @@ class CustomerController extends Controller
             ],
             'default_delivery_type' => [
                 'required',
-                Rule::in(['Franco', 'Loco']),
+                Rule::in(['franco', 'loco']),
             ],
             'business_area_code' => [
                 'required',
@@ -125,7 +119,6 @@ class CustomerController extends Controller
 
         // Mass assign safely
         $customer->update([
-            'fullname'             => $request->fullname,
             'verified'             => $request->verified,
             'employee_id'          => $request->employee_id,
             'external_customer_id' => $request->external_customer_id,
