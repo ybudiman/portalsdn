@@ -56,8 +56,8 @@
                                         @php
                                             $rowClass = match ($customer->verified) {
                                                 'Y' => 'table-success', // green
-                                                'W' => 'table-warning', // yellow
-                                                'N' => 'table-danger',  // red
+                                                'W' => 'table-danger', // red
+                                                'N' => 'table-warning',  // yellow
                                                 'P' => 'table-info',    // blue
                                                 default => '',
                                             };

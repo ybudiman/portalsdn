@@ -174,9 +174,9 @@
                              </a>
                          </li>
                      @endcan
-                     @can('gajipokok.index')
-                         <li class="menu-item {{ request()->is(['gajipokok', 'gajipokok/*']) ? 'active' : '' }}">
-                             <a href="{{ route('gajipokok.index') }}" class="menu-link">
+                     @can('category.index')
+                         <li class="menu-item {{ request()->is(['category', 'category/*']) ? 'active' : '' }}">
+                             <a href="{{ route('category.index') }}" class="menu-link">
                                  <div>Kategori</div>
                              </a>
                          </li>

@@ -37,6 +37,7 @@ use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDomisiliController;
 use App\Http\Controllers\CustomerKTPController;
@@ -498,6 +499,18 @@ Route::middleware('auth')->group(function () {
 
             Route::delete('/brand/{id}',       'destroy')->name('brand.destroy')->can('brand.delete');
             Route::delete('/brand/{id}/delete','destroy')->name('brand.delete')->can('brand.delete');
+        });
+
+        // ---------- Category ----------
+        Route::controller(CategoryController::class)->group(function () {
+            Route::get   ('/category',            'index')->name('category.index')->can('category.index');
+            Route::get   ('/category/create',     'create')->name('category.create')->can('category.create');
+            Route::post  ('/category',            'store')->name('category.store')->can('category.create');
+            Route::get   ('/category/{id}/edit',  'edit')->name('category.edit')->can('category.edit');
+            Route::put   ('/category/{id}',       'update')->name('category.update')->can('category.edit');
+
+            Route::delete('/category/{id}',       'destroy')->name('category.destroy')->can('category.delete');
+            Route::delete('/category/{id}/delete','destroy')->name('category.delete')->can('category.delete');
         });
 
         // ---------- Orders ----------
