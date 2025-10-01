@@ -59,7 +59,7 @@
                                                 <div class="d-flex">
                                                     @can('principal.edit')
                                                         <div>
-                                                            <a href="#" class="me-2 btnEdit" principal_name="{{ Crypt::encrypt($p->principal_name) }}">
+                                                            <a href="#" class="me-2 btnEdit" principal_code="{{ Crypt::encrypt($p->principal_code) }}">
                                                                 <i class="ti ti-edit text-success"></i>
                                                             </a>
                                                         </div>
@@ -115,11 +115,12 @@
 
         $(".btnEdit").click(function() {
             loading();
-            const principal_name = $(this).attr("principal_name");
+            const principal_code = $(this).attr("principal_code");
             $("#modal").modal("show");
             $(".modal-title").text("Edit Data Principal");
-            $("#loadmodal").load(`/sobat/principal/${principal_name}/edit`);
+            $("#loadmodal").load(`/sobat/principal/${principal_code}/edit`);
         });
+
 
         $(document).on('click', '.delete-confirm', function (e) {
             e.preventDefault();
