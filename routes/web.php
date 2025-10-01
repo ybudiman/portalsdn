@@ -41,6 +41,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDomisiliController;
 use App\Http\Controllers\CustomerKTPController;
+use App\Http\Controllers\PrincipalController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SidiaCategories;
 use App\Http\Controllers\SidiaCategoryController;
@@ -511,6 +512,18 @@ Route::middleware('auth')->group(function () {
 
             Route::delete('/category/{id}',       'destroy')->name('category.destroy')->can('category.delete');
             Route::delete('/category/{id}/delete','destroy')->name('category.delete')->can('category.delete');
+        });
+
+        // ---------- Principal ----------
+        Route::controller(PrincipalController::class)->group(function () {
+            Route::get   ('/principal',            'index')->name('principal.index')->can('principal.index');
+            Route::get   ('/principal/create',     'create')->name('principal.create')->can('principal.create');
+            Route::post  ('/principal',            'store')->name('principal.store')->can('principal.create');
+            Route::get   ('/principal/{id}/edit',  'edit')->name('principal.edit')->can('principal.edit');
+            Route::put   ('/principal/{id}',       'update')->name('principal.update')->can('principal.edit');
+
+            Route::delete('/principal/{id}',       'destroy')->name('principal.destroy')->can('principal.delete');
+            Route::delete('/principal/{id}/delete','destroy')->name('principal.delete')->can('principal.delete');
         });
 
         // ---------- Orders ----------

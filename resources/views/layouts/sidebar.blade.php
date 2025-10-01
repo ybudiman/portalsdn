@@ -181,9 +181,9 @@
                              </a>
                          </li>
                      @endcan
-                     @can('tunjangan.index')
-                         <li class="menu-item {{ request()->is(['tunjangan', 'tunjangan/*']) ? 'active' : '' }}">
-                             <a href="{{ route('tunjangan.index') }}" class="menu-link">
+                     @can('principal.index')
+                         <li class="menu-item {{ request()->is(['principal', 'principal/*']) ? 'active' : '' }}">
+                             <a href="{{ route('principal.index') }}" class="menu-link">
                                  <div>Principal</div>
                              </a>
                          </li>
