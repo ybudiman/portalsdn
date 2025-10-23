@@ -110,41 +110,56 @@ class BrandController extends Controller
     // ----- UTIL -----
     private function uploadToSobat($file, string $brandName, bool $overwrite = true): ?string
     {
-        $uploadUrl = config('services.sobat.upload_url')   ?: env('SOBAT_UPLOAD_URL');
-        $token     = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
+        // Old code for uploading to Sobat server (upload-brand-image.php)
+        // $uploadUrl = config('services.sobat.upload_url')   ?: env('SOBAT_UPLOAD_URL');
+        // $token     = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
 
-        Log::info('SOBAT upload config', ['url' => $uploadUrl, 'has_token' => !empty($token)]);
+        // Log::info('SOBAT upload config', ['url' => $uploadUrl, 'has_token' => !empty($token)]);
 
-        if (empty($uploadUrl) || empty($token)) {
-            Log::error('SOBAT upload config is empty');
-            return null;
-        }
+        // if (empty($uploadUrl) || empty($token)) {
+        //     Log::error('SOBAT upload config is empty');
+        //     return null;
+        // }
 
-        try {
-            $resp = Http::withToken($token)
-                ->timeout(30)
-                // ->withOptions(['verify' => false]) // aktifkan hanya bila perlu debug SSL
-                ->attach('file', fopen($file->getRealPath(), 'r'), $file->getClientOriginalName())
-                ->post($uploadUrl, [
-                    'brand_name' => $brandName,            // nama file dibentuk dari brand_name
-                    'overwrite'  => $overwrite ? '1' : '0',
-                ]);
+        // try {
+        //     $resp = Http::withToken($token)
+        //         ->timeout(30)
+        //         // ->withOptions(['verify' => false]) // aktifkan hanya bila perlu debug SSL
+        //         ->attach('file', fopen($file->getRealPath(), 'r'), $file->getClientOriginalName())
+        //         ->post($uploadUrl, [
+        //             'brand_name' => $brandName,            // nama file dibentuk dari brand_name
+        //             'overwrite'  => $overwrite ? '1' : '0',
+        //         ]);
 
-            Log::info('Upload response', ['status' => $resp->status(), 'body' => $resp->body()]);
+        //     Log::info('Upload response', ['status' => $resp->status(), 'body' => $resp->body()]);
 
-            if (!$resp->successful()) {
-                return null;
-            }
+        //     if (!$resp->successful()) {
+        //         return null;
+        //     }
 
-            $payload = $resp->json();
-            return $payload['filename'] ?? null;
-        } catch (ConnectionException $e) {
-            Log::error('Upload connection error', ['message' => $e->getMessage()]);
-            return null;
-        } catch (\Throwable $e) {
-            Log::error('Upload unexpected error', ['message' => $e->getMessage()]);
-            return null;
-        }
+        //     $payload = $resp->json();
+        //     return $payload['filename'] ?? null;
+        // } catch (ConnectionException $e) {
+        //     Log::error('Upload connection error', ['message' => $e->getMessage()]);
+        //     return null;
+        // } catch (\Throwable $e) {
+        //     Log::error('Upload unexpected error', ['message' => $e->getMessage()]);
+        //     return null;
+        // }
+
+        // If $file is an instance of Illuminate\Http\UploadedFile
+        $filePath = $file->getRealPath();
+        $ext      = $file->getClientOriginalExtension(); // just the extension
+
+        $response = Http::attach(
+            'file',                         // must match backend: $_FILES['file']
+            fopen($filePath, 'r'),          // file content
+            $brandName . '.' . $ext         // force filename: brandName.ext
+        )->post(env('SOBAT_UPLOAD_URL'), [
+            'function'      => "UPLOAD BRAND IMAGE",
+        ]);
+
+        return $brandName . '.' . $ext;
     }
 
     private function normalizeStatus($v): string
@@ -186,35 +201,56 @@ class BrandController extends Controller
      */
     private function deleteFromSobat(string $value): bool
     {
-        $token = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
-        $url   = config('services.sobat.delete_url') ?: env('SOBAT_DELETE_URL');
+        // $token = config('services.sobat.upload_token') ?: env('SOBAT_UPLOAD_TOKEN');
+        // $url   = config('services.sobat.delete_url') ?: env('SOBAT_DELETE_URL');
 
-        if (empty($token) || empty($url)) {
-            Log::warning('SOBAT delete config empty', ['url'=>$url,'has_token'=>!empty($token)]);
-            return false;
-        }
+        // if (empty($token) || empty($url)) {
+        //     Log::warning('SOBAT delete config empty', ['url'=>$url,'has_token'=>!empty($token)]);
+        //     return false;
+        // }
 
-        // ekstrak filename jika yang dikirim URL penuh
+        // // ekstrak filename jika yang dikirim URL penuh
+        // $filename = $this->extractFilename($value);
+
+        // try {
+        //     // Banyak server menolak body di DELETE → pakai POST sederhana
+        //     $resp = Http::withToken($token)->timeout(20)->post($url, [
+        //         'filename' => $filename,
+        //     ]);
+        //     Log::info('Delete response', ['status'=>$resp->status(), 'body'=>$resp->body()]);
+
+        //     if ($resp->successful()) {
+        //         return true;
+        //     }
+
+        //     // anggap sukses jika file tidak ada di server tujuan
+        //     if ($resp->status() === 200 && str_contains($resp->body(), 'not_found')) {
+        //         return true;
+        //     }
+        // } catch (\Throwable $e) {
+        //     Log::error('Delete remote file error', ['msg'=>$e->getMessage()]);
+        // }
+        // return false;
+
         $filename = $this->extractFilename($value);
-
         try {
-            // Banyak server menolak body di DELETE → pakai POST sederhana
-            $resp = Http::withToken($token)->timeout(20)->post($url, [
-                'filename' => $filename,
+            $response = Http::post(env('SOBAT_DELETE_URL'), [
+                'function'  => "DELETE FILE",
+                'type'      => "Brand",
+                'file_name' => $filename     
             ]);
-            Log::info('Delete response', ['status'=>$resp->status(), 'body'=>$resp->body()]);
 
-            if ($resp->successful()) {
+            if ($response->successful()) {
                 return true;
             }
 
-            // anggap sukses jika file tidak ada di server tujuan
-            if ($resp->status() === 200 && str_contains($resp->body(), 'not_found')) {
+            if ($response->status() === 200 && str_contains($response->body(), 'not_found')) {
                 return true;
             }
-        } catch (\Throwable $e) {
+        } catch(\Throwable $e){
             Log::error('Delete remote file error', ['msg'=>$e->getMessage()]);
         }
+
         return false;
     }
 

@@ -41,10 +41,16 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDomisiliController;
 use App\Http\Controllers\CustomerKTPController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\PricelistController;
 use App\Http\Controllers\PrincipalController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductMediaController;
+use App\Http\Controllers\ProductUomController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\SidiaCategories;
 use App\Http\Controllers\SidiaCategoryController;
+use App\Http\Controllers\TicketingController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -303,6 +309,26 @@ Route::middleware('auth')->group(function () {
         Route::post('/harilibur/tambahkansemua', 'tambahkansemua')->name('harilibur.tambahkansemua');
         Route::post('/harilibur/batalkansemua', 'batalkansemua')->name('harilibur.batalkansemua');
     });
+    Route::controller(TicketingController::class)->group(function () {
+        Route::get('/ticketing', 'index')->name('ticketing.index')->can('ticketing.index');
+        Route::post('/ticketing/upload', 'uploadExcel')->name('ticketing.upload')->can('ticketing.upload');
+
+
+        Route::get('/ticketing/histori', 'histori')->name('ticketing.histori')->can('ticketing.index');
+        Route::get('/ticketing/create', 'create')->name('ticketing.create')->can('ticketing.create');
+        Route::post('/ticketing', 'store')->name('ticketing.store')->can('ticketing.create');
+        Route::post('/ticketing/edit', 'edit')->name('ticketing.edit')->can('ticketing.edit');
+        Route::post('/ticketing/update', 'update')->name('ticketing.update')->can('ticketing.edit');
+        Route::delete('/ticketing/{id}/delete', 'destroy')->name('ticketing.delete')->can('ticketing.delete');
+        Route::get('/ticketing/{id}/{status}/show', 'show')->name('ticketing.show');
+        Route::post('/ticketing/edit', 'edit')->name('ticketing.edit')->can('ticketing.edit');
+
+        Route::post('/ticketing/{ticketing}/approve', [PresensiController::class, 'approve'])->name('ticketing.approve');
+
+        Route::post('/presensi/getdatamesin', 'getdatamesin')->name('presensi.getdatamesin');
+        Route::post('/presensi/{pin}/{status_scan}/updatefrommachine', 'updatefrommachine')->name('presensi.updatefrommachine');
+    });
+    
 
     Route::controller(PresensiController::class)->group(function () {
         Route::get('/presensi', 'index')->name('presensi.index')->can('presensi.index');
@@ -456,14 +482,6 @@ Route::middleware('auth')->group(function () {
         // Route::delete('/dat/kendaraan/{kode_kendaraan}/delete', 'destroy')->name('kendaraan.delete')->can('kendaraan.delete');
     });
 
-    // Route::controller(BrandController::class)->group(function () {
-    //     Route::get('/sobat/brand', 'index')->name('brand.index')->can('brand.index');
-    //     Route::get('/sobat/brand/create', 'create')->name('brand.create')->can('brand.create');
-    //     Route::post('/sobat/brand', 'store')->name('brand.store')->can('brand.create');
-    //     Route::get('/sobat/brand/{id}/edit', 'edit')->name('brand.edit')->can('brand.edit');
-    //     Route::put('/sobat/brand/{id}', 'update')->name('brand.update')->can('brand.edit');
-    //     Route::delete('/sobat/brand/{id}/delete', 'destroy')->name('brand.delete')->can('brand.delete');
-    // });
     Route::prefix('sobat')->group(function () {
         // ---------- Customer ----------
         Route::controller(CustomerController::class)->group(function () {
@@ -488,7 +506,6 @@ Route::middleware('auth')->group(function () {
             Route::put('/customer/{id}/domisili/{domisiliId}', 'update')->name('customer.domisili.update')->can('customer.edit');  
             Route::get('/customer/{id}/domisili/{domisiliId}', 'show')->name('customer.domisili.show')->can('customer.show');  
         });
-
 
         // ---------- Brand ----------
         Route::controller(BrandController::class)->group(function () {
@@ -524,6 +541,69 @@ Route::middleware('auth')->group(function () {
 
             Route::delete('/principal/{id}',       'destroy')->name('principal.destroy')->can('principal.delete');
             Route::delete('/principal/{id}/delete','destroy')->name('principal.delete')->can('principal.delete');
+        });
+
+        // ---------- Produk ----------
+        Route::controller(ProductController::class)->group(function () {
+            Route::get   ('/product',            'index')->name('product.index')->can('product.index');
+            Route::get   ('/product/create',     'create')->name('product.create')->can('product.create');
+            Route::post  ('/product',            'store')->name('product.store')->can('product.create');
+            Route::get   ('/product/{id}/edit',  'edit')->name('product.edit')->can('product.edit');
+            Route::put   ('/product/{id}',       'update')->name('product.update')->can('product.edit');
+            Route::get   ('/product/{id}', 'show')->name('product.show')->can('product.show');
+
+            Route::delete('/product/{id}',       'destroy')->name('product.destroy')->can('product.delete');
+            Route::delete('/product/{id}/delete','destroy')->name('product.delete')->can('product.delete');
+        });
+
+        // ---------- Product Media ----------
+        Route::controller(ProductMediaController::class)->group(function () {
+            Route::get('/product/{id}/media', 'index')->name('product.media.index')->can('product.index');  
+            Route::get('/product/{id}/media/{ktpId}/edit', 'edit')->name('product.media.edit')->can('product.edit');  
+            Route::put('/product/{id}/media/{ktpId}', 'update')->name('product.media.update')->can('product.edit');  
+            Route::get('/product/{id}/media/{ktpId}', 'show')->name('product.media.show')->can('product.show');  
+        });
+
+        // ---------- Product Uom ----------
+        Route::controller(ProductUomController::class)->group(function () {
+            Route::get('/product/{id}/uom', 'index')->name('product.uom.index')->can('product.index');  
+            Route::get('/product/{id}/uom/{domisiliId}/edit', 'edit')->name('product.uom.edit')->can('product.edit');  
+            Route::put('/product/{id}/uom/{domisiliId}', 'update')->name('product.uom.update')->can('product.edit');  
+            Route::get('/product/{id}/uom/{domisiliId}', 'show')->name('product.uom.show')->can('product.show');  
+        });
+
+        // ---------- Discount & Detail ----------
+        Route::controller(DiscountController::class)->group(function () {
+            Route::get   ('/discount',            'index')->name('discount.index')->can('discount.index');
+            Route::get   ('/discount/create',     'create')->name('discount.create')->can('discount.create');
+            Route::post  ('/discount',            'store')->name('discount.store')->can('discount.create');
+            Route::get   ('/discount/{id}/edit',  'edit')->name('discount.edit')->can('discount.edit');
+            Route::put   ('/discount/{id}',       'update')->name('discount.update')->can('discount.edit');
+
+            Route::delete('/discount/{id}',       'destroy')->name('discount.destroy')->can('discount.delete');
+            Route::delete('/discount/{id}/delete','destroy')->name('discount.delete')->can('discount.delete');
+        
+            // Detail
+            // Route::get   ('/discount',            'index')->name('discount.index')->can('discount.index');
+            // Route::get   ('/discount/create',     'create')->name('discount.create')->can('discount.create');
+            // Route::post  ('/discount',            'store')->name('discount.store')->can('discount.create');
+            // Route::get   ('/discount/{id}/edit',  'edit')->name('discount.edit')->can('discount.edit');
+            // Route::put   ('/discount/{id}',       'update')->name('discount.update')->can('discount.edit');
+    
+            Route::delete('/discount/detail/{id}',       'destroyDetail')->name('discount.detail.destroy')->can('discount.delete');
+            // Route::delete('/discount/{id}/delete','destroy')->name('discount.delete')->can('discount.delete');
+        });
+
+        // ---------- Pricelist ----------
+        Route::controller(PricelistController::class)->group(function () {
+            Route::get   ('/pricelist',            'index')->name('pricelist.index')->can('pricelist.index');
+            Route::get   ('/pricelist/create',     'create')->name('pricelist.create')->can('pricelist.create');
+            Route::post  ('/pricelist',            'store')->name('pricelist.store')->can('pricelist.create');
+            Route::get   ('/pricelist/{id}/edit',  'edit')->name('pricelist.edit')->can('pricelist.edit');
+            Route::put   ('/pricelist/{id}',       'update')->name('pricelist.update')->can('pricelist.edit');
+
+            Route::delete('/pricelist/{id}',       'destroy')->name('pricelist.destroy')->can('pricelist.delete');
+            Route::delete('/pricelist/{id}/delete','destroy')->name('pricelist.delete')->can('pricelist.delete');
         });
 
         // ---------- Orders ----------

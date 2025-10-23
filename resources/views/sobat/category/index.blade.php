@@ -95,13 +95,6 @@
                                                             </a>
                                                         </div>
                                                     @endcan
-                                                    <!-- @can('karyawan.show')
-                                                        <div>
-                                                            <a href="{{ route('karyawan.show', Crypt::encrypt($c->nik)) }}" class="me-2">
-                                                                <i class="ti ti-file-description text-info"></i>
-                                                            </a>
-                                                        </div>
-                                                    @endcan -->
                                                     @can('category.delete')
                                                         <div>
                                                             <form method="POST" action="{{ route('category.destroy', $c->id) }}" class="deleteform d-inline">

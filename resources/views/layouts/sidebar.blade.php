@@ -157,7 +157,10 @@
          @endif
          @if (auth()->user()->hasAnyPermission([
                      'brand.index',
-                     'orders.index',
+                     'category.index',
+                     'principal.index',
+                     'product.index',
+                     'customer.index',
                  ]))
              <li
                  class="menu-item {{ request()->is(['brand', 'orders', 'jenistunjangan', 'tunjangan', 'bpjskesehatan', 'bpjstenagakerja', 'penyesuaiangaji', 'penyesuaiangaji/*']) ? 'open' : '' }}">
@@ -188,9 +191,9 @@
                              </a>
                          </li>
                      @endcan
-                     @can('bpjskesehatan.index')
-                         <li class="menu-item {{ request()->is(['bpjskesehatan', 'bpjskesehatan/*']) ? 'active' : '' }}">
-                             <a href="{{ route('bpjskesehatan.index') }}" class="menu-link">
+                     @can('product.index')
+                         <li class="menu-item {{ request()->is(['product', 'product/*']) ? 'active' : '' }}">
+                             <a href="{{ route('product.index') }}" class="menu-link">
                                  <div>Produk</div>
                              </a>
                          </li>
@@ -216,16 +219,16 @@
                         </a>
                         </li>
                     @endcan
-                     @can('slipgaji.index')
-                         <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
-                             <a href="{{ route('slipgaji.index') }}" class="menu-link">
+                     @can('discount.index')
+                         <li class="menu-item {{ request()->is(['discount', 'discount/*']) ? 'active' : '' }}">
+                             <a href="{{ route('discount.index') }}" class="menu-link">
                                  <div>Diskon</div>
                              </a>
                          </li>
                      @endcan
-                     @can('slipgaji.index')
-                         <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
-                             <a href="{{ route('slipgaji.index') }}" class="menu-link">
+                     @can('pricelist.index')
+                         <li class="menu-item {{ request()->is(['pricelist', 'pricelist/*']) ? 'active' : '' }}">
+                             <a href="{{ route('pricelist.index') }}" class="menu-link">
                                  <div>Harga</div>
                              </a>
                          </li>
@@ -316,6 +319,16 @@
                  <a href="{{ route('presensi.index') }}" class="menu-link">
                      <i class="menu-icon tf-icons ti ti-device-desktop"></i>
                      <div>Monitoring Presensi</div>
+                 </a>
+             </li>
+         @endif
+         @if (auth()->user()->hasAnyPermission([
+                'ticketing.index',
+            ]))
+             <li class="menu-item {{ request()->is(['ticketing', 'ticketing/*']) ? 'active' : '' }}">
+                 <a href="{{ route('ticketing.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons ti ti-device-desktop"></i>
+                     <div>Ticketing</div>
                  </a>
              </li>
          @endif
